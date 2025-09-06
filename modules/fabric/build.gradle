@@ -41,7 +41,10 @@ dependencies {
     modCompileOnly "io.wispforest:owo-lib:${rootProject.owo_version}"
     modRuntimeOnly  "io.wispforest:owo-lib:${rootProject.owo_version}"
 
-    modCompileOnly "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-fabric:${rootProject.beltborne_lanterns_version}"
+    // Beltborne Lanterns: use dev-shadow (named) jar for compile (force classifier), and regular jar for runtime in dev
+    // Force resolve the dev-shadow artifact via classifier syntax to bypass Gradle module metadata variant selection
+    compileOnly    "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-fabric:${rootProject.beltborne_lanterns_version}:dev-shadow"
+    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-fabric:${rootProject.beltborne_lanterns_version}"
 
     common(project(path: ':modules:common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':modules:common', configuration: 'transformProductionFabric')
@@ -62,4 +65,56 @@ shadowJar {
 
 remapJar {
     inputFile.set shadowJar.archiveFile
+    archiveFileName.set("${rootProject.findProperty('mod_id')}-${project.version}-fabric+${rootProject.minecraft_version}.jar")
+}
+
+// =========== Modrith =========
+apply plugin: "com.modrinth.minotaur"
+def modrinth_token = rootProject.ext.resolveModrinthToken()
+if (!modrinth_token) throw new GradleException("Set MODRINTH_TOKEN env or in .env")
+
+modrinth {
+    token = modrinth_token
+    projectId = "geZ7ilkE"
+    versionNumber = "${project.version}-fabric"
+    versionName   = "${rootProject.findProperty('mod_name')} v${project.version}+${rootProject.minecraft_version} [Fabric/Quilt]"
+    versionType   = "beta"                 // или "beta"/"alpha"
+    gameVersions  = [ rootProject.minecraft_version ]
+    loaders       = [ "fabric","quilt" ]
+    uploadFile    = remapJar                   // из Loom
+    changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
+    dependencies { required.project "beltborne-lanterns" }
+}
+
+// ====================== CurseForge ====================
+apply plugin: "net.darkhax.curseforgegradle"
+
+def curse_token = rootProject.ext.resolveCurseforgeToken()
+if (!curse_token) throw new GradleException("Set CURSEFORGE_TOKEN env or in .env/gradle.properties")
+
+
+def curse_project_id =
+        (findProperty("curseforge_project_fabric")
+                ?: System.getenv("CURSEFORGE_PROJECT_FABRIC")
+                ?: findProperty("curseforge_project")
+                ?: System.getenv("CURSEFORGE_PROJECT_ID")
+                ?: "1342341")
+
+tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    apiToken = curse_token
+
+    disableVersionDetection()
+
+    dependsOn remapJar
+    def mainFile = upload(curse_project_id as String, remapJar)
+
+    mainFile.displayName = "${rootProject.findProperty('mod_name')} v${project.version}+${rootProject.minecraft_version} [Fabric/Quilt]"
+    mainFile.releaseType = "beta"
+    mainFile.addModLoader("Fabric")
+    mainFile.addModLoader("Quilt")
+    mainFile.addGameVersion("${rootProject.minecraft_version}")
+    mainFile.addJavaVersion("Java 21")
+    mainFile.addEnvironment("Client", "Server")
+    mainFile.changelog = rootProject.file("CHANGELOG.md"); mainFile.changelogType = "markdown"
+    mainFile.addRequirement("beltborne-lanterns")
 }

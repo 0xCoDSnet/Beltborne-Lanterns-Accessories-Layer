@@ -49,17 +49,32 @@ dependencies {
     modCompileOnly "io.wispforest:owo-lib-neoforge:${rootProject.owo_neoforge_version}"
     //modRuntimeOnly  "io.wispforest:owo-lib:${rootProject.owo_version}"
 
-    modCompileOnly "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-neoforge:${rootProject.beltborne_lanterns_version}"
+    // Beltborne Lanterns: use dev-shadow (named) jar for compile, and regular jar for runtime in dev
+    compileOnly    "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-neoforge:${rootProject.beltborne_lanterns_version}:dev-shadow"
+    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-neoforge:${rootProject.beltborne_lanterns_version}"
 
     common(project(path: ':modules:common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':modules:common', configuration: 'transformProductionNeoForge')
 }
 
 processResources {
-    inputs.property 'version', project.version
+    def props = [
+            version              : project.version,
+            mod_name             : rootProject.findProperty('mod_name'),
+            mod_id               : rootProject.findProperty('mod_id'),
+            mod_description      : rootProject.findProperty('mod_description'),
+            mod_authors          : rootProject.findProperty('mod_authors'),
+            mod_homepage         : rootProject.findProperty('mod_homepage'),
+            mod_sources          : rootProject.findProperty('mod_sources'),
+            mod_license          : rootProject.findProperty('mod_license'),
+            minecraft_version    : rootProject.findProperty('minecraft_version'),
+            neoforge_version     : rootProject.findProperty('neoforge_version'),
+            cloth_config_version : rootProject.findProperty('cloth_config_version'),
+    ]
+    inputs.properties(props)
 
     filesMatching('META-INF/neoforge.mods.toml') {
-        expand version: inputs.properties.version
+        expand(props)
     }
 }
 
@@ -70,4 +85,55 @@ shadowJar {
 
 remapJar {
     inputFile.set shadowJar.archiveFile
+    archiveFileName.set("${rootProject.findProperty('mod_id')}-${project.version}-neoforge+${rootProject.minecraft_version}.jar")
+}
+
+// =========== Modrith =========
+apply plugin: "com.modrinth.minotaur"
+def modrinth_token = rootProject.ext.resolveModrinthToken()
+if (!modrinth_token) throw new GradleException("Set MODRINTH_TOKEN env or in .env")
+
+modrinth {
+    token = modrinth_token
+    projectId = "geZ7ilkE"
+    versionNumber = "${project.version}-neoforge"
+    versionName   = "${rootProject.findProperty('mod_name')} v${project.version}+${rootProject.minecraft_version} [NeoForge]"
+    versionType   = "beta"                 // или "beta"/"alpha"
+    gameVersions  = [ rootProject.minecraft_version ]
+    loaders       = [ "neoforge" ]
+    uploadFile    = remapJar                   // из Loom
+    changelog     = rootProject.file("CHANGELOG.md").exists() ? rootProject.file("CHANGELOG.md").text : ""
+    dependencies { required.project "beltborne-lanterns" }
+}
+
+// ====================== CurseForge ====================
+apply plugin: "net.darkhax.curseforgegradle"
+
+def curse_token = rootProject.ext.resolveCurseforgeToken()
+if (!curse_token) throw new GradleException("Set CURSEFORGE_TOKEN env or in .env/gradle.properties")
+
+
+def curse_project_id =
+        (findProperty("curseforge_project_fabric")
+                ?: System.getenv("CURSEFORGE_PROJECT_FABRIC")
+                ?: findProperty("curseforge_project")
+                ?: System.getenv("CURSEFORGE_PROJECT_ID")
+                ?: "1342341")
+
+tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    apiToken = curse_token
+
+    disableVersionDetection()
+
+    dependsOn remapJar
+    def mainFile = upload(curse_project_id as String, remapJar)
+
+    mainFile.displayName = "${rootProject.findProperty('mod_name')} v${project.version}+${rootProject.minecraft_version} [NeoForge]"
+    mainFile.releaseType = "beta"
+    mainFile.addModLoader("NeoForge")
+    mainFile.addGameVersion("${rootProject.minecraft_version}")
+    mainFile.addJavaVersion("Java 21")
+    mainFile.addEnvironment("Client", "Server")
+    mainFile.changelog = rootProject.file("CHANGELOG.md"); mainFile.changelogType = "markdown"
+    mainFile.addRequirement("beltborne-lanterns")
 }
