@@ -14,10 +14,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.oxcodsnet.bl_accessories_layer.fabric.ExampleModFabric"
+      "net.oxcodsnet.bl_accessories_layer.fabric.BL_Accessories_LayerFabric"
     ],
     "client": [
-      "net.oxcodsnet.bl_accessories_layer.fabric.client.ExampleModFabricClient"
+      "net.oxcodsnet.bl_accessories_layer.fabric.client.BL_Accessories_LayerFabricClient"
     ]
   },
   "mixins": [
@@ -34,4 +34,3 @@
     "modmenu": "${modmenu_version}"
   }
 }
-

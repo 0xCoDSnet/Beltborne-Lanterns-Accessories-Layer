@@ -11,7 +11,7 @@ authors = "${mod_authors}"
 description = '''
 ${mod_description}
 '''
-#!!!!!!logoFile = ""
+logoFile = "assets/beltborne_lanterns/icon.png"
 
 [[dependencies.bl_accessories_layer]]
 modId = "neoforge"
