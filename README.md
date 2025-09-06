@@ -37,7 +37,7 @@
 
 # Beltborne Lanterns - Accessories Layer
 
-Adds compatibility between **[Beltborne Lanterns](https://modrinth.com/mod/beltborne-lanterns)** and **[Accessories](https://modrinth.com/mod/accessories)**, allowing lanterns to be equipped in Accessories slots.
+Adds compatibility between **[Beltborne Lanterns](https://modrinth.com/mod/beltborne-lanterns)** and **[Accessories](https://modrinth.com/mod/accessories)**, allowing lanterns to be equipped in the Accessories "Belt" slot.
 
 ## 📷 Showcase
 
