@@ -97,7 +97,7 @@ modrinth {
     token = modrinth_token
     projectId = "geZ7ilkE"
     versionNumber = "${project.version}-neoforge"
-    versionName   = "${rootProject.findProperty('mod_name')} v${project.version}+${rootProject.minecraft_version} [NeoForge]"
+    versionName   = "${rootProject.findProperty('mod_name_web')} v${project.version}+${rootProject.minecraft_version} [NeoForge]"
     versionType   = "beta"                 // или "beta"/"alpha"
     gameVersions  = [ rootProject.minecraft_version ]
     loaders       = [ "neoforge" ]
@@ -128,7 +128,7 @@ tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge)
     dependsOn remapJar
     def mainFile = upload(curse_project_id as String, remapJar)
 
-    mainFile.displayName = "${rootProject.findProperty('mod_name')} v${project.version}+${rootProject.minecraft_version} [NeoForge]"
+    mainFile.displayName = "${rootProject.findProperty('mod_name_web')} v${project.version}+${rootProject.minecraft_version} [NeoForge]"
     mainFile.releaseType = "beta"
     mainFile.addModLoader("NeoForge")
     mainFile.addGameVersion("${rootProject.minecraft_version}")

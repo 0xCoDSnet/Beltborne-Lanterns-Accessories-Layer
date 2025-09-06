@@ -91,7 +91,7 @@ modrinth {
     token = modrinth_token
     projectId = "geZ7ilkE"
     versionNumber = "${project.version}-fabric"
-    versionName   = "${rootProject.findProperty('mod_name')} v${project.version}+${rootProject.minecraft_version} [Fabric/Quilt]"
+    versionName   = "${rootProject.findProperty('mod_name_web')} v${project.version}+${rootProject.minecraft_version} [Fabric/Quilt]"
     versionType   = "beta"                 // или "beta"/"alpha"
     gameVersions  = [ rootProject.minecraft_version ]
     loaders       = [ "fabric","quilt" ]
@@ -122,7 +122,7 @@ tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge)
     dependsOn remapJar
     def mainFile = upload(curse_project_id as String, remapJar)
 
-    mainFile.displayName = "${rootProject.findProperty('mod_name')} v${project.version}+${rootProject.minecraft_version} [Fabric/Quilt]"
+    mainFile.displayName = "${rootProject.findProperty('mod_name_web')} v${project.version}+${rootProject.minecraft_version} [Fabric/Quilt]"
     mainFile.releaseType = "beta"
     mainFile.addModLoader("Fabric")
     mainFile.addModLoader("Quilt")
