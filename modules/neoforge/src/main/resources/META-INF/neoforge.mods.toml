@@ -1,17 +1,17 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
-#issueTrackerURL = ""
-license = "Insert License Here"
+issueTrackerURL = "https://github.com/0xCoDSnet/Beltborne-Lanterns-Accessories-Layer/issues"
+license="${mod_license}"
 
 [[mods]]
 modId = "bl_accessories_layer"
-version = "${version}"
-displayName = "Beltborne Lanterns – Accessories Layer"
-authors = "Me!"
+version="${version}"
+displayName="${mod_name}"
+authors = "${mod_authors}"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+${mod_description}
 '''
-#logoFile = ""
+#!!!!!!logoFile = ""
 
 [[dependencies.bl_accessories_layer]]
 modId = "neoforge"
@@ -28,11 +28,18 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.bl_accessories_layer]]
-modId = "architectury"
+modId = "beltborne_lanterns"
 type = "required"
-versionRange = "[13.0.8,)"
-ordering = "AFTER"
+versionRange = "[${beltborne_lanterns_version},)"
+ordering = "NONE"
 side = "BOTH"
+
+#[[dependencies.bl_accessories_layer]]
+#modId = "architectury"
+#type = "required"
+#versionRange = "[13.0.8,)"
+#ordering = "AFTER"
+#side = "BOTH"
 
 [[mixins]]
 config = "bl_accessories_layer.mixins.json"

@@ -69,7 +69,7 @@ processResources {
             mod_license          : rootProject.findProperty('mod_license'),
             minecraft_version    : rootProject.findProperty('minecraft_version'),
             neoforge_version     : rootProject.findProperty('neoforge_version'),
-            cloth_config_version : rootProject.findProperty('cloth_config_version'),
+            beltborne_lanterns_version : rootProject.findProperty('beltborne_lanterns_version'),
     ]
     inputs.properties(props)
 
