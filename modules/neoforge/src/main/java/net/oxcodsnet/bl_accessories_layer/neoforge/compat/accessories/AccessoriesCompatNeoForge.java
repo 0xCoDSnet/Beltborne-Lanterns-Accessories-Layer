@@ -49,15 +49,15 @@ public final class AccessoriesCompatNeoForge implements CompatibilityLayer {
                     }
                 }
                 BeltState.setLamp(player, now);
-                BeltLanternSave.get(player.server).set(player.getUuid(), now);
+                BeltLanternSave.get(player.getServer()).set(player.getUuid(), now);
                 BeltNetworking.broadcastBeltState(player, now.getItem());
             } else if (prevIsLamp && !newIsLamp) {
                 BeltState.setLamp(player, (Item) null);
-                BeltLanternSave.get(player.server).set(player.getUuid(), (ItemStack) null);
+                BeltLanternSave.get(player.getServer()).set(player.getUuid(), (ItemStack) null);
                 BeltNetworking.broadcastBeltState(player, null);
             } else if (prevIsLamp && newIsLamp) {
                 BeltState.setLamp(player, now);
-                BeltLanternSave.get(player.server).set(player.getUuid(), now);
+                BeltLanternSave.get(player.getServer()).set(player.getUuid(), now);
                 BeltNetworking.broadcastBeltState(player, now.getItem());
             }
         });
