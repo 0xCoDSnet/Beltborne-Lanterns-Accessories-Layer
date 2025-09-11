@@ -49,9 +49,11 @@ dependencies {
     modCompileOnly "io.wispforest:owo-lib-neoforge:${rootProject.owo_neoforge_version}"
     //modRuntimeOnly  "io.wispforest:owo-lib:${rootProject.owo_version}"
 
+    modImplementation "me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}"
+
     // Beltborne Lanterns: use dev-shadow (named) jar for compile, and regular jar for runtime in dev
-    compileOnly    "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-neoforge:${rootProject.beltborne_lanterns_version}:dev-shadow"
-    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-neoforge:${rootProject.beltborne_lanterns_version}"
+    compileOnly    "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-neoforge:${rootProject.beltborne_lanterns_version}:dev-mc${rootProject.minecraft_version}"
+    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-neoforge:${rootProject.beltborne_lanterns_version}:mc${rootProject.minecraft_version}"
 
     common(project(path: ':modules:common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':modules:common', configuration: 'transformProductionNeoForge')
