@@ -52,8 +52,8 @@ dependencies {
     modImplementation "me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}"
 
     // Beltborne Lanterns: use dev-shadow (named) jar for compile, and regular jar for runtime in dev
-    compileOnly    "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-neoforge:${rootProject.beltborne_lanterns_version}:dev-mc${rootProject.minecraft_version}"
-    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-neoforge:${rootProject.beltborne_lanterns_version}:mc${rootProject.minecraft_version}"
+    compileOnly    "net.oxcodsnet.beltborne_lanterns.neoforge:beltborne_lanterns-neoforge-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}:dev"
+    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns.neoforge:beltborne_lanterns-neoforge-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
 
     common(project(path: ':modules:common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':modules:common', configuration: 'transformProductionNeoForge')

@@ -45,8 +45,8 @@ dependencies {
 
     // Beltborne Lanterns: use dev-shadow (named) jar for compile (force classifier), and regular jar for runtime in dev
     // Force resolve the dev-shadow artifact via classifier syntax to bypass Gradle module metadata variant selection
-    compileOnly    "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-fabric:${rootProject.beltborne_lanterns_version}:dev-mc${rootProject.minecraft_version}"
-    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns:beltborne_lanterns-fabric:${rootProject.beltborne_lanterns_version}:mc${rootProject.minecraft_version}"
+    compileOnly    "net.oxcodsnet.beltborne_lanterns.fabric:beltborne_lanterns-fabric-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}:dev"
+    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns.fabric:beltborne_lanterns-fabric-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
 
     common(project(path: ':modules:common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':modules:common', configuration: 'transformProductionFabric')

@@ -15,6 +15,7 @@ allprojects {
     group = rootProject.maven_group
     version = rootProject.mod_version
 }
+
 // ====================== Maven (.env) ====================
 // ---- helpers for Maven repository configuration ----
 ext.resolveMavenRepoUrl = {
@@ -105,20 +106,17 @@ ext.resolveMavenRepoName = {
     if (!v && rootProject.hasProperty("MAVEN_REPO_NAME")) v = rootProject.property("MAVEN_REPO_NAME")?.toString()
     return v ?: "private"
 }
+
 // ====================== CurseForge ====================
-// ---- helpers for CurseForge ----
 ext.resolveCurseforgeToken = {
-    // 1) env
     def t = System.getenv("CURSEFORGE_TOKEN")
-    // 2) из dotenv (.env)
     if (!t) {
         def e = rootProject.extensions.findByName("env")
         if (e != null) {
-            if (e.isPresent("CURSEFORGE_TOKEN"))        t = e.fetch("CURSEFORGE_TOKEN")
-            else if (e.isPresent("curseforge_token"))    t = e.fetch("curseforge_token")
+            if (e.isPresent("CURSEFORGE_TOKEN")) t = e.fetch("CURSEFORGE_TOKEN")
+            else if (e.isPresent("curseforge_token")) t = e.fetch("curseforge_token")
         }
     }
-    // 3) из gradle.properties
     if (!t && rootProject.hasProperty("CURSEFORGE_TOKEN")) {
         t = rootProject.property("CURSEFORGE_TOKEN")?.toString()
     }
@@ -126,7 +124,6 @@ ext.resolveCurseforgeToken = {
 }
 
 tasks.register("publishCurseForgeAll") {
-    // Depend only on existing platform subprojects
     ["fabric", "neoforge", "quilt"].each { plat ->
         if (findProject(":modules:${plat}") != null) {
             dependsOn(":modules:${plat}:curseforge")
@@ -136,28 +133,22 @@ tasks.register("publishCurseForgeAll") {
 // ====================================================
 
 // ====================== Modrinth ====================
-// ---- helpers for Modrinth ----
 ext.resolveModrinthToken = {
-    // 1) из переменных окружения
     def t = System.getenv("MODRINTH_TOKEN")
-    // 2) из плагина dotenv (.env в корне)
     if (!t) {
         def e = rootProject.extensions.findByName("env")
         if (e != null) {
             if (e.isPresent("MODRINTH_TOKEN"))      t = e.fetch("MODRINTH_TOKEN")
-            else if (e.isPresent("modrinth_token")) t = e.fetch("modrinth_token") // если в .env в нижнем регистре
+            else if (e.isPresent("modrinth_token")) t = e.fetch("modrinth_token")
         }
     }
-    // 3) из gradle.properties (на всякий случай)
     if (!t && rootProject.hasProperty("MODRINTH_TOKEN")) {
         t = rootProject.property("MODRINTH_TOKEN")?.toString()
     }
     return t
 }
 
-// один таск на всё
 tasks.register("publishModrinthAll") {
-    // Depend only on existing platform subprojects
     ["fabric", "neoforge", "quilt"].each { plat ->
         if (findProject(":modules:${plat}") != null) {
             dependsOn(":modules:${plat}:modrinth")
@@ -170,20 +161,26 @@ subprojects {
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
 
+    // ---- groupId: добавляем сегмент по лоадеру (common/fabric/neoforge/quilt)
+    def baseGroup = rootProject.maven_group
+    def platforms = ["common", "fabric", "neoforge", "quilt"]
+    if (platforms.contains(project.name)) {
+        group = "${baseGroup}.${project.name}"
+    }
+
     base {
-        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
+        // Имена JAR: beltborne_lanterns-<platform>
         archivesName = "$rootProject.archives_name-$project.name"
     }
 
     repositories {
-        //mavenLocal()
+        mavenLocal()
         maven { url 'https://packex.shadscure.com/releases' }
         maven { url 'https://maven.terraformersmc.com/' }
         maven { url 'https://maven.wispforest.io' }
         maven { url 'https://maven.su5ed.dev/releases' }
         maven { url 'https://maven.fabricmc.net' }
         maven { url = uri('https://maven.shedaniel.me/') }
-
     }
 
     dependencies {
@@ -192,18 +189,13 @@ subprojects {
             it.mappings("net.fabricmc:yarn:$rootProject.yarn_mappings:v2")
             it.mappings("dev.architectury:yarn-mappings-patch-neoforge:$rootProject.yarn_mappings_patch_neoforge_version")
         }
-
         testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
         testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.2"
     }
 
     java {
-        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-        // if it is present.
-        // If you remove this line, sources will not be generated.
         withSourcesJar()
-
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
@@ -212,53 +204,49 @@ subprojects {
         it.options.release = 21
     }
 
-    // Configure Maven publishing.
+    // ---- Maven publishing: MC в artifactId суффиксом -mcX.Y, sources/dev — classifier’ы
     publishing {
-        def mcClassifier = "mc" + rootProject.minecraft_version
+        def mcTag = "mc" + rootProject.minecraft_version
 
         publications {
             mavenJava(MavenPublication) {
-                // Стабильный artifactId (без -dev)
-                artifactId = base.archivesName.get()
+                def baseId = base.archivesName.get()                 // e.g. beltborne_lanterns-fabric
+                artifactId = "${baseId}-${mcTag}"                    // -> beltborne_lanterns-fabric-mc1.21
 
-                // --- обычные артефакты по MC-классификатору ---
                 if (tasks.findByName('remapJar')) {
-                    artifact(tasks.named('remapJar')) {
-                        classifier = mcClassifier
+                    artifact(tasks.named('remapJar')) {               // runtime jar
                         builtBy(tasks.named('remapJar'))
                     }
 
                     if (tasks.findByName('remapSourcesJar')) {
-                        artifact(tasks.named('remapSourcesJar')) {
-                            classifier = "sources-${mcClassifier}"
+                        artifact(tasks.named('remapSourcesJar')) {     // sources
+                            classifier = "sources"
                             builtBy(tasks.named('remapSourcesJar'))
                         }
                     } else if (tasks.findByName('sourcesJar')) {
                         artifact(tasks.named('sourcesJar')) {
-                            classifier = "sources-${mcClassifier}"
+                            classifier = "sources"
                             builtBy(tasks.named('sourcesJar'))
                         }
                     }
                 } else {
                     if (tasks.findByName('jar')) {
-                        artifact(tasks.named('jar')) {
-                            classifier = mcClassifier
+                        artifact(tasks.named('jar')) {                 // runtime jar
                             builtBy(tasks.named('jar'))
                         }
                     }
                     if (tasks.findByName('sourcesJar')) {
-                        artifact(tasks.named('sourcesJar')) {
-                            classifier = "sources-${mcClassifier}"
+                        artifact(tasks.named('sourcesJar')) {          // sources
+                            classifier = "sources"
                             builtBy(tasks.named('sourcesJar'))
                         }
                     }
                 }
-
-                // dev/fat будет добавлен позже через plugins.withId('com.gradleup.shadow')
+                // dev/fat добавим ниже, когда Shadow будет применён
             }
         }
 
-        // Репозиторий — как у тебя, из .env/props
+        // Репозиторий — из .env / gradle.properties
         repositories {
             def repoUrl = rootProject.ext.resolveMavenRepoUrl()
             if (repoUrl) {
@@ -284,15 +272,16 @@ subprojects {
         }
     }
 
-    // Добавляем dev (shadowJar) к публикации mavenJava ПОСЛЕ применения Shadow плагина в модуле
+    // ---- добавляем dev (shadowJar) как доп. артефакт к mavenJava
     plugins.withId('com.gradleup.shadow') {
         publishing {
             publications {
                 named('mavenJava', MavenPublication) {
-                    def mcClassifier = "mc" + rootProject.minecraft_version
-                    artifact(tasks.named('shadowJar')) {
-                        classifier = "dev-${mcClassifier}"
-                        builtBy(tasks.named('shadowJar'))
+                    if (tasks.findByName('shadowJar')) {
+                        artifact(tasks.named('shadowJar')) {
+                            classifier = "dev"        // без MC (он уже в artifactId)
+                            builtBy(tasks.named('shadowJar'))
+                        }
                     }
                 }
             }
