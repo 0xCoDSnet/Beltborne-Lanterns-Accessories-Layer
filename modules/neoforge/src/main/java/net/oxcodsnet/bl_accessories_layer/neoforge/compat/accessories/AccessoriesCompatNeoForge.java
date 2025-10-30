@@ -2,9 +2,9 @@ package net.oxcodsnet.bl_accessories_layer.neoforge.compat.accessories;
 
 import io.wispforest.accessories.api.events.AccessoryChangeCallback;
 import io.wispforest.accessories.api.slot.SlotReference;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.oxcodsnet.beltborne_lanterns.BLMod;
 import net.oxcodsnet.beltborne_lanterns.common.BeltState;
 import net.oxcodsnet.beltborne_lanterns.common.LampRegistry;
@@ -34,30 +34,30 @@ public final class AccessoriesCompatNeoForge implements CompatibilityLayer {
     @Override
     public void onInitialize() {
         AccessoryChangeCallback.EVENT.register((prev, now, ref, change) -> {
-            if (!(ref.entity() instanceof ServerPlayerEntity player)) return;
+            if (!(ref.entity() instanceof ServerPlayer player)) return;
             if (!isBeltSlot(ref)) return;
 
             boolean prevIsLamp = LampRegistry.isLamp(prev);
             boolean newIsLamp = LampRegistry.isLamp(now);
 
             if (!prevIsLamp && newIsLamp) {
-                if (BeltState.hasLamp(player) && !SYNCING.contains(player.getUuid())) {
+                if (BeltState.hasLamp(player) && !SYNCING.contains(player.getUUID())) {
                     ItemStack current = BeltState.getLampStack(player);
-                    boolean same = current != null && ItemStack.areEqual(current, now);
+                    boolean same = current != null && ItemStack.matches(current, now);
                     if (!same && !player.isCreative() && current != null && !current.isEmpty()) {
-                        player.giveItemStack(current);
+                        player.addItem(current);
                     }
                 }
                 BeltState.setLamp(player, now);
-                BeltLanternSave.get(player.server).set(player.getUuid(), now);
+                BeltLanternSave.get(player.server).set(player.getUUID(), now);
                 BeltNetworking.broadcastBeltState(player, now.getItem());
             } else if (prevIsLamp && !newIsLamp) {
                 BeltState.setLamp(player, (Item) null);
-                BeltLanternSave.get(player.server).set(player.getUuid(), (ItemStack) null);
+                BeltLanternSave.get(player.server).set(player.getUUID(), (ItemStack) null);
                 BeltNetworking.broadcastBeltState(player, null);
             } else if (prevIsLamp && newIsLamp) {
                 BeltState.setLamp(player, now);
-                BeltLanternSave.get(player.server).set(player.getUuid(), now);
+                BeltLanternSave.get(player.server).set(player.getUUID(), now);
                 BeltNetworking.broadcastBeltState(player, now.getItem());
             }
         });
@@ -66,7 +66,7 @@ public final class AccessoriesCompatNeoForge implements CompatibilityLayer {
     }
 
     @Override
-    public boolean tryToggleLantern(ServerPlayerEntity player) {
+    public boolean tryToggleLantern(ServerPlayer player) {
         SlotReference ref = SlotReference.of(player, BELT, 0);
         if (!ref.isValid()) return false;
         ItemStack stack = ref.getStack();
@@ -74,7 +74,7 @@ public final class AccessoriesCompatNeoForge implements CompatibilityLayer {
             ItemStack toReturn = stack.copy();
             ref.setStack(ItemStack.EMPTY);
             if (!player.isCreative() && !toReturn.isEmpty()) {
-                player.giveItemStack(toReturn);
+                player.addItem(toReturn);
             }
             return true;
         }
@@ -82,24 +82,24 @@ public final class AccessoriesCompatNeoForge implements CompatibilityLayer {
     }
 
     @Override
-    public Optional<ItemStack> getBeltStack(ServerPlayerEntity player) {
+    public Optional<ItemStack> getBeltStack(ServerPlayer player) {
         SlotReference ref = SlotReference.of(player, BELT, 0);
         if (!ref.isValid()) return Optional.empty();
         return Optional.of(ref.getStack());
     }
 
     @Override
-    public void syncToggleOn(ServerPlayerEntity player) {
+    public void syncToggleOn(ServerPlayer player) {
         SlotReference ref = SlotReference.of(player, BELT, 0);
         if (!ref.isValid()) return;
         if (!ref.getStack().isEmpty()) return;
         ItemStack stored = BeltState.getLampStack(player);
         if (stored == null || stored.isEmpty()) return;
-        SYNCING.add(player.getUuid());
+        SYNCING.add(player.getUUID());
         try {
             ref.setStack(stored);
         } finally {
-            SYNCING.remove(player.getUuid());
+            SYNCING.remove(player.getUUID());
         }
     }
 }
