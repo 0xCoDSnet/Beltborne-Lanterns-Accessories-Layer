@@ -2,6 +2,7 @@ package net.oxcodsnet.bl_accessories_layer.fabric.compat.accessories;
 
 import io.wispforest.accessories.api.events.AccessoryChangeCallback;
 import io.wispforest.accessories.api.slot.SlotReference;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -12,7 +13,10 @@ import net.oxcodsnet.beltborne_lanterns.common.compat.CompatibilityLayer;
 import net.oxcodsnet.beltborne_lanterns.common.persistence.BeltLanternSave;
 import net.oxcodsnet.beltborne_lanterns.fabric.BeltNetworking;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Accessories (WispForest) integration for Fabric.
@@ -24,6 +28,7 @@ import java.util.Optional;
 public final class AccessoriesCompatFabric implements CompatibilityLayer {
     private static final String BELT = "belt";
     private static final java.util.Set<java.util.UUID> SYNCING = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
+    private static final Map<UUID, ItemStack> PENDING_RESPAWN = new ConcurrentHashMap<>();
 
     @Override
     public String getModId() {
@@ -73,6 +78,34 @@ public final class AccessoriesCompatFabric implements CompatibilityLayer {
                 BeltLanternSave.get(player.server).set(player.getUUID(), now);
                 BeltNetworking.broadcastBeltState(player, now.getItem());
             }
+        });
+
+        // Capture respawn state before Beltborne handles death drops so we can skip duplicate drops
+        ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
+            if (alive) return;
+            if (!BeltState.hasLamp(oldPlayer)) return;
+
+            var slotStack = getBeltStack(newPlayer);
+            if (slotStack.isEmpty()) return;
+
+            ItemStack stack = slotStack.get();
+            if (!LampRegistry.isLamp(stack)) return;
+
+            PENDING_RESPAWN.put(newPlayer.getUUID(), stack.copy());
+
+            BeltState.setLamp(oldPlayer, (ItemStack) null);
+            BeltLanternSave.get(oldPlayer.server).set(oldPlayer.getUUID(), (ItemStack) null);
+        });
+
+        // Reapply the preserved lamp state once the new player entity is ready
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+            if (alive) return;
+            ItemStack pending = PENDING_RESPAWN.remove(newPlayer.getUUID());
+            if (pending == null || pending.isEmpty()) return;
+
+            BeltState.setLamp(newPlayer, pending);
+            BeltLanternSave.get(newPlayer.server).set(newPlayer.getUUID(), pending);
+            BeltNetworking.broadcastBeltState(newPlayer, pending.getItem());
         });
         BLMod.LOGGER.info("Accessories integration active [Fabric]");
     }
