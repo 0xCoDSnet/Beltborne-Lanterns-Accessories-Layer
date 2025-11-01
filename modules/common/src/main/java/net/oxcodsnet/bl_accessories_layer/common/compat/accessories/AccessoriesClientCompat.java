@@ -23,5 +23,6 @@ public final class AccessoriesClientCompat {
 
         Set<Item> lamps = LampRegistry.items();
         lamps.forEach(AccessoriesRendererRegistry::registerNoRenderer);
+        AccessoriesRendererRegistry.onReload();
     }
 }

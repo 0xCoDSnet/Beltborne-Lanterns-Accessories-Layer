@@ -5,10 +5,10 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.oxcodsnet.beltborne_lanterns.BLMod;
+import net.oxcodsnet.bl_accessories_layer.BL_Accessories_Layer;
 import net.oxcodsnet.bl_accessories_layer.common.compat.accessories.AccessoriesClientCompat;
 
-@EventBusSubscriber(modid = BLMod.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = BL_Accessories_Layer.MOD_ID, value = Dist.CLIENT)
 public final class BL_Accessories_LayerNeoForgeClient {
     private BL_Accessories_LayerNeoForgeClient() {
     }
