@@ -15,6 +15,9 @@
   "entrypoints": {
     "main": [
       "net.oxcodsnet.bl_accessories_layer.fabric.BL_Accessories_LayerFabric"
+    ],
+    "client": [
+      "net.oxcodsnet.bl_accessories_layer.fabric.BL_Accessories_LayerFabricClient"
     ]
   },
   "mixins": [
