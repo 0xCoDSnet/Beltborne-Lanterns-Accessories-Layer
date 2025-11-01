@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Accessories (WispForest) integration for Fabric.
+ * Accessories (WispForest) integration.
  */
 public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<ServerPlayer, ItemStack> implements CompatibilityLayer {
     public AccessoriesCompatFabric() {
