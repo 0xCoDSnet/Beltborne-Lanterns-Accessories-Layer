@@ -93,8 +93,11 @@ remapJar {
 // =========== Modrith =========
 apply plugin: "com.modrinth.minotaur"
 def modrinth_token = rootProject.ext.resolveModrinthToken()
-if (!modrinth_token) throw new GradleException("Set MODRINTH_TOKEN env or in .env")
-
+boolean hasModrinthToken = modrinth_token != null && !modrinth_token.toString().trim().isEmpty()
+if (!hasModrinthToken) {
+    logger.warn("MODRINTH_TOKEN is not configured; using a dummy value and disabling Modrinth publishing tasks.")
+    modrinth_token = "modrinth_dummy_token"
+}
 modrinth {
     token = modrinth_token
     projectId = "geZ7ilkE"
@@ -112,8 +115,11 @@ modrinth {
 apply plugin: "net.darkhax.curseforgegradle"
 
 def curse_token = rootProject.ext.resolveCurseforgeToken()
-if (!curse_token) throw new GradleException("Set CURSEFORGE_TOKEN env or in .env/gradle.properties")
-
+boolean hasCurseToken = curse_token != null && !curse_token.toString().trim().isEmpty()
+if (!hasCurseToken) {
+    logger.warn("CURSEFORGE_TOKEN is not configured; using a dummy value and disabling CurseForge publishing tasks.")
+    curse_token = "curseforge_dummy_token"
+}
 
 def curse_project_id =
         (findProperty("curseforge_project_fabric")
