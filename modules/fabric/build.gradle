@@ -34,19 +34,17 @@ dependencies {
     //modImplementation "dev.architectury:architectury-fabric:$rootProject.architectury_api_version"
 
     // Accessories (WispForest) API — compile against official API, optional at runtime
-    modCompileOnly "io.wispforest:accessories-fabric:${rootProject.accessories_version}"
-    modRuntimeOnly  "io.wispforest:accessories-fabric:${rootProject.accessories_version}"
+    modImplementation "io.wispforest:accessories-fabric:${rootProject.accessories_version}"
 
     // OWO lib (Accessories expects it), optional at runtime
-    modCompileOnly "io.wispforest:owo-lib:${rootProject.owo_version}"
-    modRuntimeOnly  "io.wispforest:owo-lib:${rootProject.owo_version}"
+    modImplementation "io.wispforest:owo-lib:${rootProject.owo_version}"
 
+    //Сloth Сonfig
     modImplementation "me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}"
 
     // Beltborne Lanterns: use dev-shadow (named) jar for compile (force classifier), and regular jar for runtime in dev
     // Force resolve the dev-shadow artifact via classifier syntax to bypass Gradle module metadata variant selection
-    compileOnly    "net.oxcodsnet.beltborne_lanterns.fabric:beltborne_lanterns-fabric-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}:dev"
-    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns.fabric:beltborne_lanterns-fabric-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
+    modImplementation "net.oxcodsnet.beltborne_lanterns.fabric:beltborne_lanterns-fabric-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
 
     common(project(path: ':modules:common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':modules:common', configuration: 'transformProductionFabric')
@@ -87,8 +85,11 @@ remapJar {
 // =========== Modrith =========
 apply plugin: "com.modrinth.minotaur"
 def modrinth_token = rootProject.ext.resolveModrinthToken()
-if (!modrinth_token) throw new GradleException("Set MODRINTH_TOKEN env or in .env")
-
+boolean hasModrinthToken = modrinth_token != null && !modrinth_token.toString().trim().isEmpty()
+if (!hasModrinthToken) {
+    logger.warn("MODRINTH_TOKEN is not configured; using a dummy value and disabling Modrinth publishing tasks.")
+    modrinth_token = "modrinth_dummy_token"
+}
 modrinth {
     token = modrinth_token
     projectId = "geZ7ilkE"
@@ -106,8 +107,11 @@ modrinth {
 apply plugin: "net.darkhax.curseforgegradle"
 
 def curse_token = rootProject.ext.resolveCurseforgeToken()
-if (!curse_token) throw new GradleException("Set CURSEFORGE_TOKEN env or in .env/gradle.properties")
-
+boolean hasCurseToken = curse_token != null && !curse_token.toString().trim().isEmpty()
+if (!hasCurseToken) {
+    logger.warn("CURSEFORGE_TOKEN is not configured; using a dummy value and disabling CurseForge publishing tasks.")
+    curse_token = "curseforge_dummy_token"
+}
 
 def curse_project_id =
         (findProperty("curseforge_project_fabric")
