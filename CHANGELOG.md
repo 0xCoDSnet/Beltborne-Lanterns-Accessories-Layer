@@ -1,3 +1,3 @@
  ## Changelog
 ### 🐞 Bug Fixes
-- Slot access error fixed
+- Fixed a problem with the lantern duplicating after death
