@@ -16,13 +16,27 @@ public final class AccessoriesClientCompat {
     private AccessoriesClientCompat() {
     }
 
-    public static void disableDefaultRendering() {
+    /**
+     * Marks Accessories' default renderer as disabled for all Beltborne lanterns.
+     *
+     * @return a task that should be executed when it is safe to rebuild the Accessories renderer cache
+     */
+    public static Runnable disableDefaultRendering() {
         if (!REGISTERED.compareAndSet(false, true)) {
-            return;
+            return AccessoriesClientCompat::refreshRendererCache;
         }
 
+        registerNoRenderers();
+        return AccessoriesClientCompat::refreshRendererCache;
+    }
+
+    private static void registerNoRenderers() {
         Set<Item> lamps = LampRegistry.items();
         lamps.forEach(AccessoriesRendererRegistry::registerNoRenderer);
+    }
+
+    public static void refreshRendererCache() {
+        registerNoRenderers();
         AccessoriesRendererRegistry.onReload();
     }
 }
