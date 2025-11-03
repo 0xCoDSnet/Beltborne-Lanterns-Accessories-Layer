@@ -6,20 +6,18 @@ import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.oxcodsnet.bl_accessories_layer.common.compat.accessories.AccessoriesRendererReloadScheduler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class AccessoriesRendererReloadHandler {
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
-    private static final AtomicBoolean PENDING_RELOAD = new AtomicBoolean();
-
-    private static Runnable reloadAction;
 
     private AccessoriesRendererReloadHandler() {
     }
 
     public static void register(final Runnable action) {
-        reloadAction = action;
+        AccessoriesRendererReloadScheduler.setReloadAction(action);
 
         if (REGISTERED.compareAndSet(false, true)) {
             ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -27,13 +25,11 @@ public final class AccessoriesRendererReloadHandler {
                     return;
                 }
 
-                if (PENDING_RELOAD.compareAndSet(true, false) && reloadAction != null) {
-                    reloadAction.run();
-                }
+                AccessoriesRendererReloadScheduler.runIfReady();
             });
 
             ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-                PENDING_RELOAD.set(true);
+                AccessoriesRendererReloadScheduler.requestReload();
 
                 var resourceManager = client.getResourceManager();
                 if (resourceManager instanceof ReloadableResourceManager reloadable) {
@@ -45,13 +41,13 @@ public final class AccessoriesRendererReloadHandler {
 
                         @Override
                         protected void apply(Void object, ResourceManager manager, ProfilerFiller profiler) {
-                            PENDING_RELOAD.set(true);
+                            AccessoriesRendererReloadScheduler.requestReload();
                         }
                     });
                 }
             });
         } else {
-            PENDING_RELOAD.set(true);
+            AccessoriesRendererReloadScheduler.requestReload();
         }
     }
 }
