@@ -1,3 +1,3 @@
- ## Changelog
+v1.0.4 — _Small hotfixes :3_
 ### 🐞 Bug Fixes
-- Slot access error fixed
+- Fixed model reloading problem
