@@ -37,23 +37,20 @@ dependencies {
     // Architectury API. This is optional, and you can comment it out if you don't need it.
     //modImplementation "dev.architectury:architectury-neoforge:$rootProject.architectury_api_version"
 
-
     // Accessories (WispForest) API — optional; compileOnly so dev run doesn't pull 1.21.1 deps
-    modCompileOnly "io.wispforest:accessories-neoforge:${rootProject.accessories_version}"
-    //modRuntimeOnly  "io.wispforest:accessories-neoforge:${rootProject.accessories_version}"
+    modImplementation "io.wispforest:accessories-neoforge:${rootProject.accessories_version}"
 
     // Provide Fabric Event interface at compile-time only (Accessories API types reference it)
-    compileOnly "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    modCompileOnly "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
 
     // OWO lib (Accessories expects it) — compileOnly, do not include at runtime in dev
-    modCompileOnly "io.wispforest:owo-lib-neoforge:${rootProject.owo_neoforge_version}"
-    //modRuntimeOnly  "io.wispforest:owo-lib:${rootProject.owo_version}"
+    modImplementation "io.wispforest:owo-lib-neoforge:${rootProject.owo_neoforge_version}"
 
+    //Сloth Сonfig
     modImplementation "me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}"
 
-    // Beltborne Lanterns: use dev-shadow (named) jar for compile, and regular jar for runtime in dev
-    compileOnly    "net.oxcodsnet.beltborne_lanterns.neoforge:beltborne_lanterns-neoforge-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}:dev"
-    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns.neoforge:beltborne_lanterns-neoforge-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
+    // Beltborne Lanterns
+    modImplementation    "net.oxcodsnet.beltborne_lanterns.neoforge:beltborne_lanterns-neoforge-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
 
     common(project(path: ':modules:common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':modules:common', configuration: 'transformProductionNeoForge')
@@ -93,8 +90,11 @@ remapJar {
 // =========== Modrith =========
 apply plugin: "com.modrinth.minotaur"
 def modrinth_token = rootProject.ext.resolveModrinthToken()
-if (!modrinth_token) throw new GradleException("Set MODRINTH_TOKEN env or in .env")
-
+boolean hasModrinthToken = modrinth_token != null && !modrinth_token.toString().trim().isEmpty()
+if (!hasModrinthToken) {
+    logger.warn("MODRINTH_TOKEN is not configured; using a dummy value and disabling Modrinth publishing tasks.")
+    modrinth_token = "modrinth_dummy_token"
+}
 modrinth {
     token = modrinth_token
     projectId = "geZ7ilkE"
@@ -112,8 +112,11 @@ modrinth {
 apply plugin: "net.darkhax.curseforgegradle"
 
 def curse_token = rootProject.ext.resolveCurseforgeToken()
-if (!curse_token) throw new GradleException("Set CURSEFORGE_TOKEN env or in .env/gradle.properties")
-
+boolean hasCurseToken = curse_token != null && !curse_token.toString().trim().isEmpty()
+if (!hasCurseToken) {
+    logger.warn("CURSEFORGE_TOKEN is not configured; using a dummy value and disabling CurseForge publishing tasks.")
+    curse_token = "curseforge_dummy_token"
+}
 
 def curse_project_id =
         (findProperty("curseforge_project_fabric")
