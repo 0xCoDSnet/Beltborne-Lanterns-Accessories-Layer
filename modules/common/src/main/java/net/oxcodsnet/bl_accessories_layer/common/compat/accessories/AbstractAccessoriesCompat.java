@@ -40,7 +40,6 @@ public abstract class AbstractAccessoriesCompat<P, S> {
     protected final void handleSlotChange(P player, SlotAccess<S> reference, S previous, S current) {
         if (player == null) return;
         if (!reference.isValid()) return;
-        if (!isBeltSlot(reference)) return;
 
         boolean prevIsLamp = isLamp(previous);
         boolean newIsLamp = isLamp(current);
@@ -108,7 +107,6 @@ public abstract class AbstractAccessoriesCompat<P, S> {
     public final Optional<S> getBeltStackImpl(P player) {
         SlotAccess<S> reference = createSlotAccess(player);
         if (!reference.isValid()) return Optional.empty();
-        if (!isBeltSlot(reference)) return Optional.empty();
         return Optional.of(reference.getStack());
     }
 
@@ -127,11 +125,6 @@ public abstract class AbstractAccessoriesCompat<P, S> {
         } finally {
             syncing.remove(playerId);
         }
-    }
-
-    protected final boolean isBeltSlot(SlotAccess<S> reference) {
-        String name = reference.slotName();
-        return BELT.equals(name) || (name != null && name.endsWith(":" + BELT));
     }
 
     protected abstract SlotAccess<S> createSlotAccess(P player);
