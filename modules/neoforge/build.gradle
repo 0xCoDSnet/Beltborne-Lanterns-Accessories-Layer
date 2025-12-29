@@ -46,6 +46,13 @@ dependencies {
     // OWO lib (Accessories expects it) — compileOnly, do not include at runtime in dev
     modImplementation "io.wispforest:owo-lib-neoforge:${rootProject.owo_neoforge_version}"
 
+    // Endec (WispForest)
+    forgeRuntimeLibrary("blue.endless:jankson:1.2.2")
+    forgeRuntimeLibrary("io.wispforest:endec:0.1.5.1")
+    forgeRuntimeLibrary("io.wispforest.endec:netty:0.1.2")
+    forgeRuntimeLibrary("io.wispforest.endec:gson:0.1.3.1")
+    forgeRuntimeLibrary("io.wispforest.endec:jankson:0.1.3.1")
+
     //Сloth Сonfig
     modImplementation "me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}"
 
