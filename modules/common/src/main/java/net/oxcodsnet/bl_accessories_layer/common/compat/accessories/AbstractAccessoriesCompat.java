@@ -58,11 +58,15 @@ public abstract class AbstractAccessoriesCompat<P, S> {
             setMirroredLamp(player, copyStack(current));
             broadcast(player, current);
         } else if (prevIsLamp && !newIsLamp) {
-            setMirroredLamp(player, null);
-            broadcast(player, null);
+            if (!syncing.contains(playerId)) {
+                setMirroredLamp(player, null);
+                broadcast(player, null);
+            }
         } else if (prevIsLamp && newIsLamp) {
-            setMirroredLamp(player, copyStack(current));
-            broadcast(player, current);
+            if (!syncing.contains(playerId)) {
+                setMirroredLamp(player, copyStack(current));
+                broadcast(player, current);
+            }
         }
     }
 
@@ -83,6 +87,13 @@ public abstract class AbstractAccessoriesCompat<P, S> {
     protected final void handleRespawn(P player) {
         S pending = pendingRespawn.remove(getPlayerId(player));
         if (pending == null || isEmpty(pending)) return;
+
+        Optional<S> currentBelt = getBeltStackImpl(player);
+        if (currentBelt.isPresent() && isLamp(currentBelt.get())) {
+            setMirroredLamp(player, copyStack(currentBelt.get()));
+            broadcast(player, currentBelt.get());
+            return;
+        }
 
         setMirroredLamp(player, pending);
         broadcast(player, pending);

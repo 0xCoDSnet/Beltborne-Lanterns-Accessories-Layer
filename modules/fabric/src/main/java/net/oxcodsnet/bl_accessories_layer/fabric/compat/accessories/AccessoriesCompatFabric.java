@@ -105,7 +105,9 @@ public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<Ser
 
     @Override
     protected void giveBack(ServerPlayer player, ItemStack stack) {
-        player.addItem(stack);
+        if (!player.addItem(stack)) {
+            player.drop(stack, false);
+        }
     }
 
     @Override
