@@ -17,10 +17,6 @@ repositories {
 }
 
 loom {
-    mixin {
-        defaultRefmapName = "bl_accessories_layer-fabric.refmap.json"
-    }
-
     runs {
         client {
             client()

@@ -33,6 +33,3 @@ type = "required"
 versionRange = "[${beltborne_lanterns_version},)"
 ordering = "NONE"
 side = "BOTH"
-
-[[mixins]]
-config = "bl_accessories_layer.mixins.json"
