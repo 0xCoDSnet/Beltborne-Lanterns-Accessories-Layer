@@ -54,7 +54,6 @@ tasks.named('processResources') {
     from(configurations.commonResources) {
         exclude 'fabric.mod.json'
         exclude 'META-INF/neoforge.mods.toml'
-        exclude '*.mixins.json'
     }
 }
 
