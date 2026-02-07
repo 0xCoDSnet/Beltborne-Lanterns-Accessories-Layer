@@ -89,14 +89,13 @@ public abstract class AbstractAccessoriesCompat<P, S> {
         if (pending == null || isEmpty(pending)) return;
 
         Optional<S> currentBelt = getBeltStackImpl(player);
-        if (currentBelt.isPresent() && isLamp(currentBelt.get())) {
-            setMirroredLamp(player, copyStack(currentBelt.get()));
-            broadcast(player, currentBelt.get());
+        if (currentBelt.isEmpty() || !isLamp(currentBelt.get())) {
+            // Belt slot is empty after respawn — don't restore phantom lamp state
             return;
         }
 
-        setMirroredLamp(player, pending);
-        broadcast(player, pending);
+        setMirroredLamp(player, copyStack(currentBelt.get()));
+        broadcast(player, currentBelt.get());
     }
 
     public final boolean tryToggleLanternImpl(P player) {

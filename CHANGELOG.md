@@ -1,3 +1,10 @@
+v1.0.7 — _Respawn reliability fixes_
+### Bug Fixes
+- Fixed race condition on NeoForge where Clone event handler could read belt slot before Accessories finished copying attachment data, potentially losing lamp state on death
+- Fixed phantom lamp after respawn where mirror state could be restored without an actual item in the belt slot
+
+---
+
 v1.0.6 — _Stability & compatibility improvements_
 ### Bug Fixes
 - Fixed lantern disappearing when inventory is full — now drops at your feet

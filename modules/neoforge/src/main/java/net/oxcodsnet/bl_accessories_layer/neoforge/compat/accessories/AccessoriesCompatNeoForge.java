@@ -64,7 +64,7 @@ public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<S
     }
 
     private void registerRespawnCallbacks() {
-        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onClone);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOW, this::onClone);
         NeoForge.EVENT_BUS.addListener(this::onRespawn);
     }
 
