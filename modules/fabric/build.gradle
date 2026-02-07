@@ -57,13 +57,12 @@ dependencies {
     // Cloth Config
     modImplementation "me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}"
 
-    // Beltborne Lanterns (compile-only: BL is a separate runtime dependency)
-    // Common classes (Mojmap from NeoForm)
+    // Beltborne Lanterns — compile against Mojmap jars, load as mod at runtime
     compileOnly "net.oxcodsnet.beltborne_lanterns.common:beltborne_lanterns-common-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
-    // Fabric-specific classes (dev jar, Mojmap)
     compileOnly("net.oxcodsnet.beltborne_lanterns.fabric:beltborne_lanterns-fabric-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}") {
         artifact { classifier = 'dev' }
     }
+    modRuntimeOnly "net.oxcodsnet.beltborne_lanterns.fabric:beltborne_lanterns-fabric-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
 }
 
 processResources {
