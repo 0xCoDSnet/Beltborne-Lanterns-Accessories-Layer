@@ -33,3 +33,10 @@ type = "required"
 versionRange = "[${beltborne_lanterns_version},)"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.bl_accessories_layer]]
+modId = "accessories"
+type = "required"
+versionRange = "[${accessories_version},)"
+ordering = "NONE"
+side = "BOTH"

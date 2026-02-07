@@ -25,7 +25,8 @@
     "beltborne_lanterns": ">=${beltborne_lanterns_version}",
     "minecraft": "~${minecraft_version}",
     "java": ">=21",
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "accessories": ">=${accessories_version}"
   },
   "suggests": {
     "modmenu": "${modmenu_version}"

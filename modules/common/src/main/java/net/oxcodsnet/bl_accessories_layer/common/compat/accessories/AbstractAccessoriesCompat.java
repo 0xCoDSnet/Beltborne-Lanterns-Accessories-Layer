@@ -74,12 +74,12 @@ public abstract class AbstractAccessoriesCompat<P, S> {
         if (!hasMirroredLamp(oldPlayer)) return;
 
         Optional<S> slotStack = getBeltStackImpl(newPlayer);
-        if (slotStack.isEmpty()) return;
+        if (slotStack.isEmpty() || !isLamp(slotStack.get())) {
+            setMirroredLamp(oldPlayer, null);
+            return;
+        }
 
-        S stack = slotStack.get();
-        if (!isLamp(stack)) return;
-
-        pendingRespawn.put(getPlayerId(newPlayer), copyStack(stack));
+        pendingRespawn.put(getPlayerId(newPlayer), copyStack(slotStack.get()));
 
         setMirroredLamp(oldPlayer, null);
     }
@@ -120,7 +120,9 @@ public abstract class AbstractAccessoriesCompat<P, S> {
         SlotAccess<S> reference = createSlotAccess(player);
         if (!reference.isValid()) return Optional.empty();
         if (!isBeltSlot(reference)) return Optional.empty();
-        return Optional.of(reference.getStack());
+        S stack = reference.getStack();
+        if (isEmpty(stack)) return Optional.empty();
+        return Optional.of(stack);
     }
 
     public final void syncToggleOnImpl(P player) {

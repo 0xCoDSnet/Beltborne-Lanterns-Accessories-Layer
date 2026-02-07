@@ -1,8 +1,6 @@
 package net.oxcodsnet.bl_accessories_layer.neoforge.compat.accessories;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -23,17 +21,12 @@ public final class AccessoriesRendererReloadHandler {
 
         if (REGISTERED.compareAndSet(false, true)) {
             NeoForge.EVENT_BUS.addListener(AccessoriesRendererReloadHandler::onClientTick);
-
-            var resourceManager = Minecraft.getInstance().getResourceManager();
-            if (resourceManager instanceof ReloadableResourceManager reloadable) {
-                reloadable.registerReloadListener(createListener());
-            }
         } else {
             AccessoriesRendererReloadScheduler.requestReload();
         }
     }
 
-    private static PreparableReloadListener createListener() {
+    public static PreparableReloadListener createReloadListener() {
         return new SimplePreparableReloadListener<Void>() {
             @Override
             protected Void prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
