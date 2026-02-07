@@ -1,19 +1,19 @@
-architectury {
-    common rootProject.enabled_platforms.split(',')
+plugins {
+    id 'multiloader-common'
+    id 'net.neoforged.moddev'
+}
+
+neoForge {
+    neoFormVersion = rootProject.neoform_version
 }
 
 dependencies {
-    // We depend on Fabric Loader here to use the Fabric @Environment annotations,
-    // which get remapped to the correct annotations on each platform.
-    // Do NOT use other classes from Fabric Loader.
-    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    // Mixin compile-only (processing happens in loader modules)
+    compileOnly "org.spongepowered:mixin:0.8.7"
 
-    // Architectury API. This is optional, and you can comment it out if you don't need it.
-    //modImplementation "dev.architectury:architectury:$rootProject.architectury_api_version"
+    // Accessories API (common, mojmap variant)
+    compileOnly "io.wispforest:accessories-common:${rootProject.accessories_version}-mojmap"
 
-    //Accessories
-    modImplementation "io.wispforest:accessories-common:${rootProject.accessories_version}-mojmap"
-
-    //Beltborne Lanterns
-    modImplementation "net.oxcodsnet.beltborne_lanterns.common:beltborne_lanterns-common-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
+    // Beltborne Lanterns (common module from Maven)
+    compileOnly "net.oxcodsnet.beltborne_lanterns.common:beltborne_lanterns-common-mc${rootProject.minecraft_version}:${rootProject.beltborne_lanterns_version}"
 }
