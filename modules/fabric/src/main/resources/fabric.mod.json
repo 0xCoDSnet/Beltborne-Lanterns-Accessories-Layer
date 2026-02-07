@@ -20,9 +20,6 @@
       "net.oxcodsnet.bl_accessories_layer.fabric.BL_Accessories_LayerFabricClient"
     ]
   },
-  "mixins": [
-    "bl_accessories_layer.mixins.json"
-  ],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
     "beltborne_lanterns": ">=${beltborne_lanterns_version}",
