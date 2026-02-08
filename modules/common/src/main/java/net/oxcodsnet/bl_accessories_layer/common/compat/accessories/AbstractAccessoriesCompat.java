@@ -1,22 +1,19 @@
 package net.oxcodsnet.bl_accessories_layer.common.compat.accessories;
 
+import net.oxcodsnet.bl_accessories_layer.common.config.SlotConfig;
 import net.oxcodsnet.beltborne_lanterns.BLMod;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Shared Accessories (WispForest) integration logic used by each loader.
- *
- * @param <P> platform specific player type
- * @param <S> platform specific stack type
- */
 public abstract class AbstractAccessoriesCompat<P, S> {
-    protected static final String BELT = "belt";
+
+    private static volatile AbstractAccessoriesCompat<?, ?> instance;
 
     private final Set<UUID> syncing = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final Map<UUID, S> pendingRespawn = new ConcurrentHashMap<>();
@@ -24,6 +21,11 @@ public abstract class AbstractAccessoriesCompat<P, S> {
 
     protected AbstractAccessoriesCompat(String platformName) {
         this.platformName = platformName;
+        instance = this;
+    }
+
+    public static AbstractAccessoriesCompat<?, ?> getInstance() {
+        return instance;
     }
 
     public final String modIdImpl() {
@@ -40,7 +42,7 @@ public abstract class AbstractAccessoriesCompat<P, S> {
     protected final void handleSlotChange(P player, SlotAccess<S> reference, S previous, S current) {
         if (player == null) return;
         if (!reference.isValid()) return;
-        if (!isBeltSlot(reference)) return;
+        if (!isAllowedSlot(reference)) return;
 
         boolean prevIsLamp = isLamp(previous);
         boolean newIsLamp = isLamp(current);
@@ -56,31 +58,54 @@ public abstract class AbstractAccessoriesCompat<P, S> {
                 }
             }
             setMirroredLamp(player, copyStack(current));
-            broadcast(player, current);
+            reevaluateAndBroadcast(player);
         } else if (prevIsLamp && !newIsLamp) {
             if (!syncing.contains(playerId)) {
                 setMirroredLamp(player, null);
-                broadcast(player, null);
+                reevaluateAndBroadcast(player);
             }
         } else if (prevIsLamp && newIsLamp) {
             if (!syncing.contains(playerId)) {
                 setMirroredLamp(player, copyStack(current));
-                broadcast(player, current);
+                reevaluateAndBroadcast(player);
             }
         }
+    }
+
+    public final void reevaluateAndBroadcast(P player) {
+        for (SlotAccess<S> ref : createSlotAccessList(player)) {
+            if (!ref.isValid()) continue;
+            if (!isAllowedSlot(ref)) continue;
+
+            S functional = ref.getStack();
+            if (!isLamp(functional)) continue;
+
+            if (!isSlotRenderEnabled(player, ref.slotName(), 0)) {
+                broadcast(player, null);
+                return;
+            }
+
+            Optional<S> cosmetic = getCosmeticStack(player, ref.slotName(), 0);
+            if (cosmetic.isPresent()) {
+                broadcast(player, cosmetic.get());
+            } else {
+                broadcast(player, functional);
+            }
+            return;
+        }
+        broadcast(player, null);
     }
 
     protected final void handleClone(P oldPlayer, P newPlayer) {
         if (!hasMirroredLamp(oldPlayer)) return;
 
         Optional<S> slotStack = getBeltStackImpl(newPlayer);
-        if (slotStack.isEmpty()) return;
+        if (slotStack.isEmpty() || !isLamp(slotStack.get())) {
+            setMirroredLamp(oldPlayer, null);
+            return;
+        }
 
-        S stack = slotStack.get();
-        if (!isLamp(stack)) return;
-
-        pendingRespawn.put(getPlayerId(newPlayer), copyStack(stack));
-
+        pendingRespawn.put(getPlayerId(newPlayer), copyStack(slotStack.get()));
         setMirroredLamp(oldPlayer, null);
     }
 
@@ -89,95 +114,84 @@ public abstract class AbstractAccessoriesCompat<P, S> {
         if (pending == null || isEmpty(pending)) return;
 
         Optional<S> currentBelt = getBeltStackImpl(player);
-        if (currentBelt.isPresent() && isLamp(currentBelt.get())) {
-            setMirroredLamp(player, copyStack(currentBelt.get()));
-            broadcast(player, currentBelt.get());
+        if (currentBelt.isEmpty() || !isLamp(currentBelt.get())) {
             return;
         }
 
-        setMirroredLamp(player, pending);
-        broadcast(player, pending);
+        setMirroredLamp(player, copyStack(currentBelt.get()));
+        reevaluateAndBroadcast(player);
     }
 
     public final boolean tryToggleLanternImpl(P player) {
-        SlotAccess<S> reference = createSlotAccess(player);
-        if (!reference.isValid()) return false;
+        for (SlotAccess<S> reference : createSlotAccessList(player)) {
+            if (!reference.isValid()) continue;
 
-        S stack = reference.getStack();
-        if (!isLamp(stack)) {
-            return false;
-        }
+            S stack = reference.getStack();
+            if (!isLamp(stack)) continue;
 
-        S toReturn = copyStack(stack);
-        reference.setStack(emptyStack());
-        if (!isCreative(player) && !isEmpty(toReturn)) {
-            giveBack(player, toReturn);
+            S toReturn = copyStack(stack);
+            reference.setStack(emptyStack());
+            if (!isCreative(player) && !isEmpty(toReturn)) {
+                giveBack(player, toReturn);
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 
     public final Optional<S> getBeltStackImpl(P player) {
-        SlotAccess<S> reference = createSlotAccess(player);
-        if (!reference.isValid()) return Optional.empty();
-        if (!isBeltSlot(reference)) return Optional.empty();
-        return Optional.of(reference.getStack());
+        for (SlotAccess<S> reference : createSlotAccessList(player)) {
+            if (!reference.isValid()) continue;
+            if (!isAllowedSlot(reference)) continue;
+            S stack = reference.getStack();
+            if (!isEmpty(stack) && isLamp(stack)) return Optional.of(stack);
+        }
+        return Optional.empty();
     }
 
     public final void syncToggleOnImpl(P player) {
-        SlotAccess<S> reference = createSlotAccess(player);
-        if (!reference.isValid()) return;
-        if (!isEmpty(reference.getStack())) return;
-
         S stored = getMirroredStack(player);
         if (stored == null || isEmpty(stored)) return;
 
-        UUID playerId = getPlayerId(player);
-        syncing.add(playerId);
-        try {
-            reference.setStack(copyStack(stored));
-        } finally {
-            syncing.remove(playerId);
+        for (SlotAccess<S> reference : createSlotAccessList(player)) {
+            if (!reference.isValid()) continue;
+            if (!isEmpty(reference.getStack())) continue;
+
+            UUID playerId = getPlayerId(player);
+            syncing.add(playerId);
+            try {
+                reference.setStack(copyStack(stored));
+            } finally {
+                syncing.remove(playerId);
+            }
+            return;
         }
     }
 
-    protected final boolean isBeltSlot(SlotAccess<S> reference) {
-        String name = reference.slotName();
-        return BELT.equals(name) || (name != null && name.endsWith(":" + BELT));
+    protected final boolean isAllowedSlot(SlotAccess<S> reference) {
+        return SlotConfig.isAllowedSlot(reference.slotName());
     }
 
-    protected abstract SlotAccess<S> createSlotAccess(P player);
-
+    protected abstract List<SlotAccess<S>> createSlotAccessList(P player);
+    protected abstract Optional<S> getCosmeticStack(P player, String slotName, int index);
+    protected abstract boolean isSlotRenderEnabled(P player, String slotName, int index);
     protected abstract boolean hasMirroredLamp(P player);
-
     protected abstract S getMirroredStack(P player);
-
     protected abstract void setMirroredLamp(P player, S stack);
-
     protected abstract boolean isCreative(P player);
-
     protected abstract void giveBack(P player, S stack);
-
     protected abstract void broadcast(P player, S stack);
-
     protected abstract boolean isLamp(S stack);
-
     protected abstract boolean isEmpty(S stack);
-
     protected abstract S copyStack(S stack);
-
     protected abstract S emptyStack();
-
     protected abstract boolean stacksEqual(S first, S second);
-
     protected abstract UUID getPlayerId(P player);
 
     protected interface SlotAccess<S> {
         boolean isValid();
-
         String slotName();
-
         S getStack();
-
         void setStack(S stack);
     }
 }

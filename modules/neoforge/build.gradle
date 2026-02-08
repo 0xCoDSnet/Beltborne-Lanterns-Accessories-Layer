@@ -70,6 +70,7 @@ processResources {
         minecraft_version    : rootProject.findProperty('minecraft_version'),
         neoforge_version     : rootProject.findProperty('neoforge_version'),
         beltborne_lanterns_version : rootProject.findProperty('beltborne_lanterns_version'),
+        accessories_version  : rootProject.findProperty('accessories_version'),
     ]
     inputs.properties(props)
     filesMatching('META-INF/neoforge.mods.toml') { expand(props) }
