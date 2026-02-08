@@ -36,7 +36,6 @@ public final class AccessoriesClientCompat {
     }
 
     public static void refreshRendererCache() {
-        registerNoRenderers();
         AccessoriesRendererRegistry.onReload();
     }
 }
