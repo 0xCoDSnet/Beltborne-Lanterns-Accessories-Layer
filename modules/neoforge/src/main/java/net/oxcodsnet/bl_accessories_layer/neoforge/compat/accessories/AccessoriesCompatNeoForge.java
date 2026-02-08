@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.oxcodsnet.bl_accessories_layer.common.config.SlotConfig;
 import net.oxcodsnet.bl_accessories_layer.common.compat.accessories.AbstractAccessoriesCompat;
 import net.oxcodsnet.beltborne_lanterns.common.BeltState;
 import net.oxcodsnet.beltborne_lanterns.common.LampRegistry;
@@ -14,6 +15,7 @@ import net.oxcodsnet.beltborne_lanterns.common.compat.CompatibilityLayer;
 import net.oxcodsnet.beltborne_lanterns.common.persistence.BeltLanternSave;
 import net.oxcodsnet.beltborne_lanterns.neoforge.BeltNetworking;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,8 +83,11 @@ public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<S
     }
 
     @Override
-    protected SlotAccess<ItemStack> createSlotAccess(ServerPlayer player) {
-        return new SlotReferenceAccess(SlotReference.of(player, BELT, 0));
+    protected List<SlotAccess<ItemStack>> createSlotAccessList(ServerPlayer player) {
+        return SlotConfig.allowedSlots().stream()
+            .map(slot -> (SlotAccess<ItemStack>) new SlotReferenceAccess(
+                SlotReference.of(player, slot, 0)))
+            .toList();
     }
 
     @Override
