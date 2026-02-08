@@ -76,6 +76,7 @@ processResources {
         fabric_loader_version : rootProject.findProperty('fabric_loader_version'),
         beltborne_lanterns_version : rootProject.findProperty('beltborne_lanterns_version'),
         modmenu_version       : rootProject.findProperty('modmenu_version'),
+        accessories_version   : rootProject.findProperty('accessories_version'),
     ]
     inputs.properties(props)
     filesMatching('fabric.mod.json') { expand(props) }
