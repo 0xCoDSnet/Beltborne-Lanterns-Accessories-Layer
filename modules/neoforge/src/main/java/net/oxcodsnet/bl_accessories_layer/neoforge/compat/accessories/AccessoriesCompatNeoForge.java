@@ -1,12 +1,15 @@
 package net.oxcodsnet.bl_accessories_layer.neoforge.compat.accessories;
 
+import io.wispforest.accessories.api.AccessoriesCapability;
 import io.wispforest.accessories.api.events.AccessoryChangeCallback;
+import io.wispforest.accessories.api.events.ContainersChangeCallback;
 import io.wispforest.accessories.api.slot.SlotReference;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.oxcodsnet.bl_accessories_layer.common.config.SlotConfig;
 import net.oxcodsnet.bl_accessories_layer.common.compat.accessories.AbstractAccessoriesCompat;
 import net.oxcodsnet.beltborne_lanterns.common.BeltState;
 import net.oxcodsnet.beltborne_lanterns.common.LampRegistry;
@@ -14,41 +17,18 @@ import net.oxcodsnet.beltborne_lanterns.common.compat.CompatibilityLayer;
 import net.oxcodsnet.beltborne_lanterns.common.persistence.BeltLanternSave;
 import net.oxcodsnet.beltborne_lanterns.neoforge.BeltNetworking;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Accessories (WispForest) integration for NeoForge.
- */
 public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<ServerPlayer, ItemStack> implements CompatibilityLayer {
-    public AccessoriesCompatNeoForge() {
-        super("NeoForge");
-    }
+    public AccessoriesCompatNeoForge() { super("NeoForge"); }
 
-    @Override
-    public String getModId() {
-        return modIdImpl();
-    }
-
-    @Override
-    public void onInitialize() {
-        initializeImpl();
-    }
-
-    @Override
-    public boolean tryToggleLantern(ServerPlayer player) {
-        return tryToggleLanternImpl(player);
-    }
-
-    @Override
-    public Optional<ItemStack> getBeltStack(ServerPlayer player) {
-        return getBeltStackImpl(player);
-    }
-
-    @Override
-    public void syncToggleOn(ServerPlayer player) {
-        syncToggleOnImpl(player);
-    }
+    @Override public String getModId() { return modIdImpl(); }
+    @Override public void onInitialize() { initializeImpl(); }
+    @Override public boolean tryToggleLantern(ServerPlayer player) { return tryToggleLanternImpl(player); }
+    @Override public Optional<ItemStack> getBeltStack(ServerPlayer player) { return getBeltStackImpl(player); }
+    @Override public void syncToggleOn(ServerPlayer player) { syncToggleOnImpl(player); }
 
     @Override
     protected void registerEvents() {
@@ -61,10 +41,14 @@ public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<S
             if (!(reference.entity() instanceof ServerPlayer player)) return;
             handleSlotChange(player, wrap(reference), previous, current);
         });
+        ContainersChangeCallback.EVENT.register((entity, capability, changedContainers) -> {
+            if (!(entity instanceof ServerPlayer player)) return;
+            reevaluateAndBroadcast(player);
+        });
     }
 
     private void registerRespawnCallbacks() {
-        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onClone);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOW, this::onClone);
         NeoForge.EVENT_BUS.addListener(this::onRespawn);
     }
 
@@ -81,19 +65,36 @@ public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<S
     }
 
     @Override
-    protected SlotAccess<ItemStack> createSlotAccess(ServerPlayer player) {
-        return new SlotReferenceAccess(SlotReference.of(player, BELT, 0));
+    protected List<SlotAccess<ItemStack>> createSlotAccessList(ServerPlayer player) {
+        return SlotConfig.allowedSlots().stream()
+            .map(slot -> (SlotAccess<ItemStack>) new SlotReferenceAccess(SlotReference.of(player, slot, 0)))
+            .toList();
     }
 
     @Override
-    protected boolean hasMirroredLamp(ServerPlayer player) {
-        return BeltState.hasLamp(player);
+    protected Optional<ItemStack> getCosmeticStack(ServerPlayer player, String slotName, int index) {
+        var capability = AccessoriesCapability.get(player);
+        if (capability == null) return Optional.empty();
+        var container = capability.getContainers().get(slotName);
+        if (container == null) return Optional.empty();
+        var cosmetic = container.getCosmeticAccessories();
+        if (cosmetic == null || index >= cosmetic.getContainerSize()) return Optional.empty();
+        ItemStack stack = cosmetic.getItem(index);
+        if (stack.isEmpty() || !LampRegistry.isLamp(stack)) return Optional.empty();
+        return Optional.of(stack);
     }
 
     @Override
-    protected ItemStack getMirroredStack(ServerPlayer player) {
-        return BeltState.getLampStack(player);
+    protected boolean isSlotRenderEnabled(ServerPlayer player, String slotName, int index) {
+        var capability = AccessoriesCapability.get(player);
+        if (capability == null) return true;
+        var container = capability.getContainers().get(slotName);
+        if (container == null) return true;
+        return container.shouldRender(index);
     }
+
+    @Override protected boolean hasMirroredLamp(ServerPlayer player) { return BeltState.hasLamp(player); }
+    @Override protected ItemStack getMirroredStack(ServerPlayer player) { return BeltState.getLampStack(player); }
 
     @Override
     protected void setMirroredLamp(ServerPlayer player, ItemStack stack) {
@@ -106,16 +107,11 @@ public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<S
         }
     }
 
-    @Override
-    protected boolean isCreative(ServerPlayer player) {
-        return player.isCreative();
-    }
+    @Override protected boolean isCreative(ServerPlayer player) { return player.isCreative(); }
 
     @Override
     protected void giveBack(ServerPlayer player, ItemStack stack) {
-        if (!player.addItem(stack)) {
-            player.drop(stack, false);
-        }
+        if (!player.addItem(stack)) { player.drop(stack, false); }
     }
 
     @Override
@@ -123,25 +119,10 @@ public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<S
         BeltNetworking.broadcastBeltState(player, stack == null || stack.isEmpty() ? null : stack.getItem());
     }
 
-    @Override
-    protected boolean isLamp(ItemStack stack) {
-        return stack != null && LampRegistry.isLamp(stack);
-    }
-
-    @Override
-    protected boolean isEmpty(ItemStack stack) {
-        return stack == null || stack.isEmpty();
-    }
-
-    @Override
-    protected ItemStack copyStack(ItemStack stack) {
-        return stack == null ? ItemStack.EMPTY : stack.copy();
-    }
-
-    @Override
-    protected ItemStack emptyStack() {
-        return ItemStack.EMPTY;
-    }
+    @Override protected boolean isLamp(ItemStack stack) { return stack != null && LampRegistry.isLamp(stack); }
+    @Override protected boolean isEmpty(ItemStack stack) { return stack == null || stack.isEmpty(); }
+    @Override protected ItemStack copyStack(ItemStack stack) { return stack == null ? ItemStack.EMPTY : stack.copy(); }
+    @Override protected ItemStack emptyStack() { return ItemStack.EMPTY; }
 
     @Override
     protected boolean stacksEqual(ItemStack first, ItemStack second) {
@@ -150,40 +131,16 @@ public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<S
         return ItemStack.isSameItemSameComponents(first, second);
     }
 
-    @Override
-    protected UUID getPlayerId(ServerPlayer player) {
-        return player.getUUID();
-    }
+    @Override protected UUID getPlayerId(ServerPlayer player) { return player.getUUID(); }
 
-    private SlotAccess<ItemStack> wrap(SlotReference reference) {
-        return new SlotReferenceAccess(reference);
-    }
+    private SlotAccess<ItemStack> wrap(SlotReference reference) { return new SlotReferenceAccess(reference); }
 
     private static final class SlotReferenceAccess implements SlotAccess<ItemStack> {
         private final SlotReference delegate;
-
-        private SlotReferenceAccess(SlotReference delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean isValid() {
-            return delegate != null && delegate.isValid();
-        }
-
-        @Override
-        public String slotName() {
-            return delegate.slotName();
-        }
-
-        @Override
-        public ItemStack getStack() {
-            return delegate.getStack();
-        }
-
-        @Override
-        public void setStack(ItemStack stack) {
-            delegate.setStack(stack);
-        }
+        private SlotReferenceAccess(SlotReference delegate) { this.delegate = delegate; }
+        @Override public boolean isValid() { return delegate != null && delegate.isValid(); }
+        @Override public String slotName() { return delegate.slotName(); }
+        @Override public ItemStack getStack() { return delegate.getStack(); }
+        @Override public void setStack(ItemStack stack) { delegate.setStack(stack); }
     }
 }

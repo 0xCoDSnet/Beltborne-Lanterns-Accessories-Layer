@@ -12,6 +12,7 @@
   },
   "icon": "assets/bl_accessories_layer/icon.png",
   "environment": "*",
+  "mixins": ["bl_accessories_layer.mixins.json"],
   "entrypoints": {
     "main": [
       "net.oxcodsnet.bl_accessories_layer.fabric.BL_Accessories_LayerFabric"
@@ -25,7 +26,8 @@
     "beltborne_lanterns": ">=${beltborne_lanterns_version}",
     "minecraft": "~${minecraft_version}",
     "java": ">=21",
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "accessories": ">=${accessories_version}"
   },
   "suggests": {
     "modmenu": "${modmenu_version}"

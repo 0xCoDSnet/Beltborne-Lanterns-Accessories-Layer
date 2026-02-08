@@ -3,14 +3,15 @@ loaderVersion = "[4,)"
 issueTrackerURL = "https://github.com/0xCoDSnet/Beltborne-Lanterns-Accessories-Layer/issues"
 license="${mod_license}"
 
+[[mixins]]
+config = "bl_accessories_layer.mixins.json"
+
 [[mods]]
 modId = "bl_accessories_layer"
 version="${version}"
 displayName="${mod_name}"
 authors = "${mod_authors}"
-description = '''
-${mod_description}
-'''
+description = '''${mod_description}'''
 logoFile = "assets/bl_accessories_layer/icon.png"
 
 [[dependencies.bl_accessories_layer]]
@@ -31,5 +32,12 @@ side = "BOTH"
 modId = "beltborne_lanterns"
 type = "required"
 versionRange = "[${beltborne_lanterns_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.bl_accessories_layer]]
+modId = "accessories"
+type = "required"
+versionRange = "[${accessories_version},)"
 ordering = "NONE"
 side = "BOTH"
