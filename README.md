@@ -72,6 +72,10 @@ No datapacks or item tags are needed — the mod handles slot validation automat
 
 </details>
 
+## Credits
+
+- **[@DistantDig](https://github.com/DistantDig)** — idea for configurable slot support ([#7](https://github.com/Shadscure/Beltborne-Lanterns-Accessories-Layer/pull/7))
+
 ## 📜 License
 
 This project is licensed under the **Apache License 2.0** — see the [LICENSE](LICENSE) file for details.  
