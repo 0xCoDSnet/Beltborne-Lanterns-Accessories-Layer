@@ -49,7 +49,8 @@ Equip your lantern in the Accessories **Belt** slot — it works just like the d
 * **[Beltborne Lanterns](https://modrinth.com/mod/beltborne-lanterns)** — the core mod
 * **[Accessories](https://modrinth.com/mod/accessories)** — the accessory API by WispForest
 
-## 🔧 For Modpack Makers
+<details>
+<summary><strong>🔧 For Modpack Makers</strong></summary>
 
 By default, lanterns can only be placed in the **Belt** slot. You can customize this by editing `config/bl_accessories_layer.json` (auto-generated on first launch):
 
@@ -68,6 +69,8 @@ To allow additional slots (e.g. `charm`, `necklace`), add them to the list:
 ```
 
 No datapacks or item tags are needed — the mod handles slot validation automatically.
+
+</details>
 
 ## 📜 License
 
