@@ -32,7 +32,7 @@ public final class AccessoriesClientCompat {
 
     private static void registerNoRenderers() {
         Set<Item> lamps = LampRegistry.items();
-        lamps.forEach(AccessoriesRendererRegistry::registerNoRenderer);
+        lamps.forEach(AccessoriesRendererRegistry::bindItemToEmptyRenderer);
     }
 
     public static void refreshRendererCache() {

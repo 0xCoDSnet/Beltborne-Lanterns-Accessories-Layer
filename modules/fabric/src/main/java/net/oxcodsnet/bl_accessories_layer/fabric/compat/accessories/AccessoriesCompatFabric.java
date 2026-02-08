@@ -124,10 +124,10 @@ public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<Ser
     protected void setMirroredLamp(ServerPlayer player, ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             BeltState.setLamp(player, (ItemStack) null);
-            BeltLanternSave.get(player.getServer()).set(player.getUUID(), (ItemStack) null);
+            BeltLanternSave.get(((net.minecraft.server.level.ServerLevel) player.level()).getServer()).set(player.getUUID(), (ItemStack) null);
         } else {
             BeltState.setLamp(player, stack);
-            BeltLanternSave.get(player.getServer()).set(player.getUUID(), stack);
+            BeltLanternSave.get(((net.minecraft.server.level.ServerLevel) player.level()).getServer()).set(player.getUUID(), stack);
         }
     }
 

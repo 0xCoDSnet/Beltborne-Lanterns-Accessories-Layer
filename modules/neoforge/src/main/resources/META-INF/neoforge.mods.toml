@@ -19,14 +19,14 @@ logoFile = "assets/bl_accessories_layer/icon.png"
 [[dependencies.bl_accessories_layer]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.8,)"
+versionRange = "[21.10,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.bl_accessories_layer]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.8,)"
+versionRange = "[1.21.10,)"
 ordering = "NONE"
 side = "BOTH"
 
@@ -40,6 +40,6 @@ side = "BOTH"
 [[dependencies.bl_accessories_layer]]
 modId = "accessories"
 type = "required"
-versionRange = "[${accessories_version},)"
+versionRange = "[1.4.3-beta,)"
 ordering = "NONE"
 side = "BOTH"
