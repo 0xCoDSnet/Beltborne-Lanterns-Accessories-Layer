@@ -9,3 +9,4 @@ public final class BL_Accessories_Layer {
         SlotConfig.load();
     }
 }
+

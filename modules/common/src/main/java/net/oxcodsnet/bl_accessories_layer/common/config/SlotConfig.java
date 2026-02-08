@@ -15,6 +15,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Loads and stores the list of allowed accessory slots from
+ * {@code config/bl_accessories_layer.json}.
+ *
+ * <p>Thread-safe: the immutable list is published via a volatile field.
+ */
 public final class SlotConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String CONFIG_FILE = "config/bl_accessories_layer.json";
@@ -24,6 +30,10 @@ public final class SlotConfig {
 
     private SlotConfig() {}
 
+    /**
+     * Loads the config from disk. Creates the file with defaults if it does not exist.
+     * Should be called once during mod initialization.
+     */
     public static void load() {
         Path path = Path.of(CONFIG_FILE);
         try {
@@ -74,16 +84,26 @@ public final class SlotConfig {
         }
     }
 
+    /**
+     * Returns the immutable list of allowed slot names.
+     */
     public static List<String> allowedSlots() {
         return allowedSlots;
     }
 
+    /**
+     * Checks whether the given slot name is in the allowed list.
+     * Matches both bare names ({@code "belt"}) and namespaced
+     * ({@code "accessories:belt"}) against the config entries.
+     */
     public static boolean isAllowedSlot(String slotName) {
         if (slotName == null) return false;
         List<String> slots = allowedSlots;
         for (String allowed : slots) {
             if (allowed.equals(slotName)) return true;
+            // match "accessories:belt" against config entry "belt"
             if (slotName.endsWith(":" + allowed)) return true;
+            // match "belt" against config entry "accessories:belt"
             if (allowed.endsWith(":" + slotName)) return true;
         }
         return false;

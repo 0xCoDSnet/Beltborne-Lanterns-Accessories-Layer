@@ -19,16 +19,38 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Accessories (WispForest) integration.
+ */
 public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<ServerPlayer, ItemStack> implements CompatibilityLayer {
     public AccessoriesCompatFabric() {
         super("Fabric");
     }
 
-    @Override public String getModId() { return modIdImpl(); }
-    @Override public void onInitialize() { initializeImpl(); }
-    @Override public boolean tryToggleLantern(ServerPlayer player) { return tryToggleLanternImpl(player); }
-    @Override public Optional<ItemStack> getBeltStack(ServerPlayer player) { return getBeltStackImpl(player); }
-    @Override public void syncToggleOn(ServerPlayer player) { syncToggleOnImpl(player); }
+    @Override
+    public String getModId() {
+        return modIdImpl();
+    }
+
+    @Override
+    public void onInitialize() {
+        initializeImpl();
+    }
+
+    @Override
+    public boolean tryToggleLantern(ServerPlayer player) {
+        return tryToggleLanternImpl(player);
+    }
+
+    @Override
+    public Optional<ItemStack> getBeltStack(ServerPlayer player) {
+        return getBeltStackImpl(player);
+    }
+
+    @Override
+    public void syncToggleOn(ServerPlayer player) {
+        syncToggleOnImpl(player);
+    }
 
     @Override
     protected void registerEvents() {
@@ -61,7 +83,8 @@ public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<Ser
     @Override
     protected List<SlotAccess<ItemStack>> createSlotAccessList(ServerPlayer player) {
         return SlotConfig.allowedSlots().stream()
-            .map(slot -> (SlotAccess<ItemStack>) new SlotReferenceAccess(SlotReference.of(player, slot, 0)))
+            .map(slot -> (SlotAccess<ItemStack>) new SlotReferenceAccess(
+                SlotReference.of(player, slot, 0)))
             .toList();
     }
 
@@ -87,25 +110,37 @@ public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<Ser
         return container.shouldRender(index);
     }
 
-    @Override protected boolean hasMirroredLamp(ServerPlayer player) { return BeltState.hasLamp(player); }
-    @Override protected ItemStack getMirroredStack(ServerPlayer player) { return BeltState.getLampStack(player); }
+    @Override
+    protected boolean hasMirroredLamp(ServerPlayer player) {
+        return BeltState.hasLamp(player);
+    }
+
+    @Override
+    protected ItemStack getMirroredStack(ServerPlayer player) {
+        return BeltState.getLampStack(player);
+    }
 
     @Override
     protected void setMirroredLamp(ServerPlayer player, ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             BeltState.setLamp(player, (ItemStack) null);
-            BeltLanternSave.get(player.server).set(player.getUUID(), (ItemStack) null);
+            BeltLanternSave.get(player.getServer()).set(player.getUUID(), (ItemStack) null);
         } else {
             BeltState.setLamp(player, stack);
-            BeltLanternSave.get(player.server).set(player.getUUID(), stack);
+            BeltLanternSave.get(player.getServer()).set(player.getUUID(), stack);
         }
     }
 
-    @Override protected boolean isCreative(ServerPlayer player) { return player.isCreative(); }
+    @Override
+    protected boolean isCreative(ServerPlayer player) {
+        return player.isCreative();
+    }
 
     @Override
     protected void giveBack(ServerPlayer player, ItemStack stack) {
-        if (!player.addItem(stack)) { player.drop(stack, false); }
+        if (!player.addItem(stack)) {
+            player.drop(stack, false);
+        }
     }
 
     @Override
@@ -113,10 +148,25 @@ public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<Ser
         BeltNetworking.broadcastBeltState(player, stack == null || stack.isEmpty() ? null : stack.getItem());
     }
 
-    @Override protected boolean isLamp(ItemStack stack) { return stack != null && LampRegistry.isLamp(stack); }
-    @Override protected boolean isEmpty(ItemStack stack) { return stack == null || stack.isEmpty(); }
-    @Override protected ItemStack copyStack(ItemStack stack) { return stack == null ? ItemStack.EMPTY : stack.copy(); }
-    @Override protected ItemStack emptyStack() { return ItemStack.EMPTY; }
+    @Override
+    protected boolean isLamp(ItemStack stack) {
+        return stack != null && LampRegistry.isLamp(stack);
+    }
+
+    @Override
+    protected boolean isEmpty(ItemStack stack) {
+        return stack == null || stack.isEmpty();
+    }
+
+    @Override
+    protected ItemStack copyStack(ItemStack stack) {
+        return stack == null ? ItemStack.EMPTY : stack.copy();
+    }
+
+    @Override
+    protected ItemStack emptyStack() {
+        return ItemStack.EMPTY;
+    }
 
     @Override
     protected boolean stacksEqual(ItemStack first, ItemStack second) {
@@ -125,16 +175,40 @@ public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<Ser
         return ItemStack.isSameItemSameComponents(first, second);
     }
 
-    @Override protected UUID getPlayerId(ServerPlayer player) { return player.getUUID(); }
+    @Override
+    protected UUID getPlayerId(ServerPlayer player) {
+        return player.getUUID();
+    }
 
-    private SlotAccess<ItemStack> wrap(SlotReference reference) { return new SlotReferenceAccess(reference); }
+    private SlotAccess<ItemStack> wrap(SlotReference reference) {
+        return new SlotReferenceAccess(reference);
+    }
 
     private static final class SlotReferenceAccess implements SlotAccess<ItemStack> {
         private final SlotReference delegate;
-        private SlotReferenceAccess(SlotReference delegate) { this.delegate = delegate; }
-        @Override public boolean isValid() { return delegate != null && delegate.isValid(); }
-        @Override public String slotName() { return delegate.slotName(); }
-        @Override public ItemStack getStack() { return delegate.getStack(); }
-        @Override public void setStack(ItemStack stack) { delegate.setStack(stack); }
+
+        private SlotReferenceAccess(SlotReference delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean isValid() {
+            return delegate != null && delegate.isValid();
+        }
+
+        @Override
+        public String slotName() {
+            return delegate.slotName();
+        }
+
+        @Override
+        public ItemStack getStack() {
+            return delegate.getStack();
+        }
+
+        @Override
+        public void setStack(ItemStack stack) {
+            delegate.setStack(stack);
+        }
     }
 }

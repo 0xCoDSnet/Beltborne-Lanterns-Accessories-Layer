@@ -24,6 +24,9 @@ public abstract class AbstractAccessoriesCompat<P, S> {
         instance = this;
     }
 
+    /**
+     * Returns the active instance (set during construction of the platform-specific subclass).
+     */
     public static AbstractAccessoriesCompat<?, ?> getInstance() {
         return instance;
     }
@@ -72,6 +75,10 @@ public abstract class AbstractAccessoriesCompat<P, S> {
         }
     }
 
+    /**
+     * Re-evaluates what lamp should be rendered and broadcasts the result.
+     * Checks render toggle and cosmetic slot override.
+     */
     public final void reevaluateAndBroadcast(P player) {
         for (SlotAccess<S> ref : createSlotAccessList(player)) {
             if (!ref.isValid()) continue;
@@ -106,6 +113,7 @@ public abstract class AbstractAccessoriesCompat<P, S> {
         }
 
         pendingRespawn.put(getPlayerId(newPlayer), copyStack(slotStack.get()));
+
         setMirroredLamp(oldPlayer, null);
     }
 
@@ -173,25 +181,48 @@ public abstract class AbstractAccessoriesCompat<P, S> {
     }
 
     protected abstract List<SlotAccess<S>> createSlotAccessList(P player);
+
+    /**
+     * Returns the lamp from the cosmetic slot, if present and valid.
+     */
     protected abstract Optional<S> getCosmeticStack(P player, String slotName, int index);
+
+    /**
+     * Checks whether the render toggle for the given slot is enabled.
+     */
     protected abstract boolean isSlotRenderEnabled(P player, String slotName, int index);
+
     protected abstract boolean hasMirroredLamp(P player);
+
     protected abstract S getMirroredStack(P player);
+
     protected abstract void setMirroredLamp(P player, S stack);
+
     protected abstract boolean isCreative(P player);
+
     protected abstract void giveBack(P player, S stack);
+
     protected abstract void broadcast(P player, S stack);
+
     protected abstract boolean isLamp(S stack);
+
     protected abstract boolean isEmpty(S stack);
+
     protected abstract S copyStack(S stack);
+
     protected abstract S emptyStack();
+
     protected abstract boolean stacksEqual(S first, S second);
+
     protected abstract UUID getPlayerId(P player);
 
     protected interface SlotAccess<S> {
         boolean isValid();
+
         String slotName();
+
         S getStack();
+
         void setStack(S stack);
     }
 }
