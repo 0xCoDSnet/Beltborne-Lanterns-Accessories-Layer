@@ -1,6 +1,8 @@
 package net.oxcodsnet.bl_accessories_layer.fabric.compat.accessories;
 
+import io.wispforest.accessories.api.AccessoriesCapability;
 import io.wispforest.accessories.api.events.AccessoryChangeCallback;
+import io.wispforest.accessories.api.events.ContainersChangeCallback;
 import io.wispforest.accessories.api.slot.SlotReference;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.minecraft.server.level.ServerPlayer;
@@ -61,6 +63,10 @@ public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<Ser
             if (!(reference.entity() instanceof ServerPlayer player)) return;
             handleSlotChange(player, wrap(reference), previous, current);
         });
+        ContainersChangeCallback.EVENT.register((entity, capability, changedContainers) -> {
+            if (!(entity instanceof ServerPlayer player)) return;
+            reevaluateAndBroadcast(player);
+        });
     }
 
     private void registerRespawnCallbacks() {
@@ -80,6 +86,28 @@ public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<Ser
             .map(slot -> (SlotAccess<ItemStack>) new SlotReferenceAccess(
                 SlotReference.of(player, slot, 0)))
             .toList();
+    }
+
+    @Override
+    protected Optional<ItemStack> getCosmeticStack(ServerPlayer player, String slotName, int index) {
+        var capability = AccessoriesCapability.get(player);
+        if (capability == null) return Optional.empty();
+        var container = capability.getContainers().get(slotName);
+        if (container == null) return Optional.empty();
+        var cosmetic = container.getCosmeticAccessories();
+        if (cosmetic == null || index >= cosmetic.getContainerSize()) return Optional.empty();
+        ItemStack stack = cosmetic.getItem(index);
+        if (stack.isEmpty() || !LampRegistry.isLamp(stack)) return Optional.empty();
+        return Optional.of(stack);
+    }
+
+    @Override
+    protected boolean isSlotRenderEnabled(ServerPlayer player, String slotName, int index) {
+        var capability = AccessoriesCapability.get(player);
+        if (capability == null) return true;
+        var container = capability.getContainers().get(slotName);
+        if (container == null) return true;
+        return container.shouldRender(index);
     }
 
     @Override

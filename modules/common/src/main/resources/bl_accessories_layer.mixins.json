@@ -5,7 +5,9 @@
   "minVersion": "0.8",
   "mixins": [
     "SlotPredicateRegistryMixin",
-    "AccessoriesSlotMixin"
+    "AccessoriesSlotMixin",
+    "AccessoriesContainerMixin",
+    "AccessoriesInternalSlotMixin"
   ],
   "injectors": {
     "defaultRequire": 1

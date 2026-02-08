@@ -1,3 +1,10 @@
+v1.2.0 — _Render toggle & cosmetic slot support_
+### New Features
+- Render toggle support — pressing the visibility toggle button in the Accessories UI now hides/shows the BL lantern render
+- Cosmetic slot support — placing a different lantern in the cosmetic slot now overrides the rendered lantern visual
+
+---
+
 v1.1.0 — _Configurable accessory slots_
 ### New Features
 - Added configurable slot support — modpack makers can now specify which Accessories slots accept lanterns via `config/bl_accessories_layer.json`

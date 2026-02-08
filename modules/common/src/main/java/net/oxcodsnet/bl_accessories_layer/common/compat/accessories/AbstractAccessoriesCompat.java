@@ -13,12 +13,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractAccessoriesCompat<P, S> {
 
+    private static volatile AbstractAccessoriesCompat<?, ?> instance;
+
     private final Set<UUID> syncing = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final Map<UUID, S> pendingRespawn = new ConcurrentHashMap<>();
     private final String platformName;
 
     protected AbstractAccessoriesCompat(String platformName) {
         this.platformName = platformName;
+        instance = this;
+    }
+
+    /**
+     * Returns the active instance (set during construction of the platform-specific subclass).
+     */
+    public static AbstractAccessoriesCompat<?, ?> getInstance() {
+        return instance;
     }
 
     public final String modIdImpl() {
@@ -51,18 +61,46 @@ public abstract class AbstractAccessoriesCompat<P, S> {
                 }
             }
             setMirroredLamp(player, copyStack(current));
-            broadcast(player, current);
+            reevaluateAndBroadcast(player);
         } else if (prevIsLamp && !newIsLamp) {
             if (!syncing.contains(playerId)) {
                 setMirroredLamp(player, null);
-                broadcast(player, null);
+                reevaluateAndBroadcast(player);
             }
         } else if (prevIsLamp && newIsLamp) {
             if (!syncing.contains(playerId)) {
                 setMirroredLamp(player, copyStack(current));
-                broadcast(player, current);
+                reevaluateAndBroadcast(player);
             }
         }
+    }
+
+    /**
+     * Re-evaluates what lamp should be rendered and broadcasts the result.
+     * Checks render toggle and cosmetic slot override.
+     */
+    public final void reevaluateAndBroadcast(P player) {
+        for (SlotAccess<S> ref : createSlotAccessList(player)) {
+            if (!ref.isValid()) continue;
+            if (!isAllowedSlot(ref)) continue;
+
+            S functional = ref.getStack();
+            if (!isLamp(functional)) continue;
+
+            if (!isSlotRenderEnabled(player, ref.slotName(), 0)) {
+                broadcast(player, null);
+                return;
+            }
+
+            Optional<S> cosmetic = getCosmeticStack(player, ref.slotName(), 0);
+            if (cosmetic.isPresent()) {
+                broadcast(player, cosmetic.get());
+            } else {
+                broadcast(player, functional);
+            }
+            return;
+        }
+        broadcast(player, null);
     }
 
     protected final void handleClone(P oldPlayer, P newPlayer) {
@@ -85,12 +123,11 @@ public abstract class AbstractAccessoriesCompat<P, S> {
 
         Optional<S> currentBelt = getBeltStackImpl(player);
         if (currentBelt.isEmpty() || !isLamp(currentBelt.get())) {
-            // Belt slot is empty after respawn — don't restore phantom lamp state
             return;
         }
 
         setMirroredLamp(player, copyStack(currentBelt.get()));
-        broadcast(player, currentBelt.get());
+        reevaluateAndBroadcast(player);
     }
 
     public final boolean tryToggleLanternImpl(P player) {
@@ -144,6 +181,16 @@ public abstract class AbstractAccessoriesCompat<P, S> {
     }
 
     protected abstract List<SlotAccess<S>> createSlotAccessList(P player);
+
+    /**
+     * Returns the lamp from the cosmetic slot, if present and valid.
+     */
+    protected abstract Optional<S> getCosmeticStack(P player, String slotName, int index);
+
+    /**
+     * Checks whether the render toggle for the given slot is enabled.
+     */
+    protected abstract boolean isSlotRenderEnabled(P player, String slotName, int index);
 
     protected abstract boolean hasMirroredLamp(P player);
 
