@@ -12,6 +12,9 @@
   },
   "icon": "assets/bl_accessories_layer/icon.png",
   "environment": "*",
+  "mixins": [
+    "bl_accessories_layer.mixins.json"
+  ],
   "entrypoints": {
     "main": [
       "net.oxcodsnet.bl_accessories_layer.fabric.BL_Accessories_LayerFabric"

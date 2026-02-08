@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "net.oxcodsnet.bl_accessories_layer.common.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "mixins": [
+    "SlotPredicateRegistryMixin",
+    "AccessoriesSlotMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

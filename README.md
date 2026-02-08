@@ -67,8 +67,7 @@ To allow additional slots (e.g. `charm`, `necklace`), add them to the list:
 }
 ```
 
-> **Note:** For custom slots to accept lantern items, you also need a datapack that adds them to the corresponding Accessories item tag:
-> `data/accessories/tags/item/<slot_name>.json`
+No datapacks or item tags are needed — the mod handles slot validation automatically.
 
 ## 📜 License
 
