@@ -6,7 +6,7 @@
   <a href="https://modrinth.com/project/beltborne-lanterns-accessories-layer">
     <img alt="Modrinth" height="48" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy-minimal/available/modrinth_vector.svg">
   </a>&nbsp;
-  <a href="https://www.curseforge.com/minecraft/mc-mods/bl-accessories-layer">
+  <a href="https://www.curseforge.com/minecraft/mc-mods/beltborne-lanterns-accessories-layer">
     <img alt="CurseForge" height="48" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy-minimal/available/curseforge_vector.svg">
   </a>&nbsp;
   <a href="https://discord.gg/9JRb3JMAD3">
