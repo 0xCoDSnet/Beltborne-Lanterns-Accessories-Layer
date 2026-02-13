@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AccessoriesBasedSlot.class)
 public class AccessoriesInternalSlotMixin {
-    @Inject(method = "mayPlace", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "mayPlace", at = @At("HEAD"), cancellable = true)
     private void bl_allowLampsInCosmeticSlot(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         var self = (AccessoriesBasedSlot) (Object) this;
         if (!self.isCosmeticSlot()) return;
