@@ -55,6 +55,11 @@ public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<S
     }
 
     @Override
+    public boolean handlesItemOnDeath() {
+        return handlesItemOnDeathImpl();
+    }
+
+    @Override
     protected void registerEvents() {
         registerAccessoryCallbacks();
         registerRespawnCallbacks();
