@@ -31,6 +31,11 @@ public final class AccessoriesCompatNeoForge extends AbstractAccessoriesCompat<S
     @Override public void syncToggleOn(ServerPlayer player) { syncToggleOnImpl(player); }
 
     @Override
+    public boolean handlesItemOnDeath() {
+        return handlesItemOnDeathImpl();
+    }
+
+    @Override
     protected void registerEvents() {
         registerAccessoryCallbacks();
         registerRespawnCallbacks();
