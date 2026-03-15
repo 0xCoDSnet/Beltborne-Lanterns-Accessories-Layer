@@ -31,6 +31,11 @@ public final class AccessoriesCompatFabric extends AbstractAccessoriesCompat<Ser
     @Override public void syncToggleOn(ServerPlayer player) { syncToggleOnImpl(player); }
 
     @Override
+    public boolean handlesItemOnDeath() {
+        return handlesItemOnDeathImpl();
+    }
+
+    @Override
     protected void registerEvents() {
         registerAccessoryCallbacks();
         registerRespawnCallbacks();
