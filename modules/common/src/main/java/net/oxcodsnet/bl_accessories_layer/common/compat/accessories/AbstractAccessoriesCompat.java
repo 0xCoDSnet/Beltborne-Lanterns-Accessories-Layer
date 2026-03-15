@@ -35,6 +35,10 @@ public abstract class AbstractAccessoriesCompat<P, S> {
         return "accessories";
     }
 
+    public final boolean handlesItemOnDeathImpl() {
+        return true;
+    }
+
     public final void initializeImpl() {
         registerEvents();
         BLMod.LOGGER.info("Accessories integration active [{}]", platformName);
