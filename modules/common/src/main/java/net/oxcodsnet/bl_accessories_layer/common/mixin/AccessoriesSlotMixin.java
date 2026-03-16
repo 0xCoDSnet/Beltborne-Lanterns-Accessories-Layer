@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AccessoriesBasedSlot.class)
 public class AccessoriesSlotMixin {
-    @Inject(method = "getMaxStackSize(Lnet/minecraft/world/item/ItemStack;)I",
+    @Inject(method = "getMaxStackSize",
             at = @At("HEAD"), cancellable = true)
     private void bl_limitLampStackSize(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
         if (LampRegistry.isLamp(stack)) {
